@@ -2,19 +2,46 @@ package service
 
 import (
 	"context"
+	"fmt"
+
+	"github.com/imirjar/Michman/internal/michman/models"
+	"github.com/imirjar/Michman/internal/michman/storage"
 )
 
 type Storage interface {
-	GetQuery(context.Context, string) (string, error)
-	ExecuteQuery(context.Context, string) (string, error)
+	GetDivers(context.Context) (string, error)
+	GetDiver(context.Context, string) (models.Diver, error)
+	GetDiverReports(context.Context, string) (string, error)
 }
 
 type Service struct {
 	storage Storage
 }
 
+func (s Service) DiverList(ctx context.Context) (string, error) {
+	return s.storage.GetDivers(ctx)
+}
+
+func (s Service) DiverInfo(ctx context.Context, id string) (string, error) {
+	// must geting data from diver api
+
+	diver, err := s.storage.GetDiver(ctx, id)
+	if err != nil {
+		return err.Error(), err
+	}
+
+	//reprts path ->/reports/list/
+
+	diver.Reports, err = s.storage.GetDiverReports(ctx, id)
+	if err != nil {
+		return err.Error(), err
+	}
+
+	return fmt.Sprint(diver), err
+}
+
 func NewService() *Service {
 	return &Service{
-		// storage: storage.NewStorage(),
+		storage: storage.NewStorage(),
 	}
 }

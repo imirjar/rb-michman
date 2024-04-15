@@ -3,20 +3,25 @@ package reports
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"time"
 
+	"github.com/imirjar/Michman/internal/diver/models"
 	_ "modernc.org/sqlite"
 )
 
 type ReportsStore struct {
-	driver string
-	path   string
+	db *sql.DB
 }
 
 func NewReportStore() *ReportsStore {
+	db, err := sql.Open("sqlite", "reports")
+	if err != nil {
+		panic(err)
+	}
+
 	repStore := ReportsStore{
-		path:   "reports",
-		driver: "sqlite",
+		db: db,
 	}
 
 	if err := repStore.Ping(); err != nil {
@@ -27,30 +32,19 @@ func NewReportStore() *ReportsStore {
 }
 
 func (r *ReportsStore) Ping() error {
-	db, err := sql.Open(r.driver, r.path)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
-	return db.PingContext(ctx)
+	return r.db.PingContext(ctx)
 }
 
 func (r *ReportsStore) GetQuery(ctx context.Context, id string) (string, error) {
 	// log.Print(id)
 
-	db, err := sql.Open(r.driver, r.path)
+	conn, err := r.db.Conn(ctx)
 	if err != nil {
 		return err.Error(), err
 	}
-	defer db.Close()
-
-	conn, err := db.Conn(ctx)
-	if err != nil {
-		return err.Error(), err
-	}
+	defer conn.Close()
 
 	var data string
 
@@ -63,5 +57,34 @@ func (r *ReportsStore) GetQuery(ctx context.Context, id string) (string, error) 
 	}
 
 	return data, nil
+}
 
+func (r *ReportsStore) GetAllReports(ctx context.Context) (string, error) {
+	conn, err := r.db.Conn(ctx)
+	if err != nil {
+		return err.Error(), err
+	}
+	defer conn.Close()
+
+	rows, err := conn.QueryContext(ctx, "SELECT * FROM reports")
+	if err != nil {
+		return err.Error(), err
+	}
+
+	var reports []models.Report
+	for rows.Next() {
+
+		var rep models.Report
+		err = rows.Scan(&rep.Id, &rep.Query)
+		if err != nil {
+			return err.Error(), err
+		}
+		reports = append(reports, rep)
+	}
+	result, err := json.Marshal(&reports)
+	if err != nil {
+		return err.Error(), err
+	}
+
+	return string(result), nil
 }

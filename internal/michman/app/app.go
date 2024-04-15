@@ -6,10 +6,12 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/imirjar/Michman/internal/diver/service"
+	"github.com/imirjar/Michman/internal/michman/service"
 )
 
 type Service interface {
+	DiverList(context.Context) (string, error)
+	DiverInfo(context.Context, string) (string, error)
 }
 
 type App struct {
@@ -22,16 +24,17 @@ func NewApp(addr string) *App {
 	}
 }
 
-// must check whitch of the divers the user have access
-func (a *App) DiverList(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("I am Michman"))
-}
-
 func (a *App) Run(ctx context.Context) error {
 	log.Print("Run app")
 	router := chi.NewRouter()
-	router.Get("/", a.DiverList)
+
+	router.Get("/", a.Hello)
+
+	router.Post("/divers/", a.DiversListHandler())
+
+	router.Route("/diver", func(diver chi.Router) {
+		diver.Post("/info/", a.DiverInfoHandler())
+	})
 
 	gateway := &http.Server{
 		Addr:    "localhost:9090",

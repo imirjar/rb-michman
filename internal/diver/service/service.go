@@ -13,6 +13,7 @@ type Service struct {
 type Storage interface {
 	GetQuery(context.Context, string) (string, error)
 	ExecuteQuery(context.Context, string) (string, error)
+	GetAllReports(ctx context.Context) (string, error)
 }
 
 func NewService() *Service {
@@ -33,4 +34,8 @@ func (s Service) Execute(ctx context.Context, id string) (string, error) {
 	}
 
 	return data, nil
+}
+
+func (s Service) ReportsList(ctx context.Context) (string, error) {
+	return s.storage.GetAllReports(ctx)
 }
