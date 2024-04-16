@@ -23,16 +23,13 @@ func (s Service) DiverList(ctx context.Context) (string, error) {
 }
 
 func (s Service) DiverInfo(ctx context.Context, id string) (string, error) {
-	// must geting data from diver api
 
 	diver, err := s.storage.GetDiver(ctx, id)
 	if err != nil {
 		return err.Error(), err
 	}
 
-	//reprts path ->/reports/list/
-
-	diver.Reports, err = s.storage.GetDiverReports(ctx, id)
+	diver.Reports, err = s.storage.GetDiverReports(ctx, diver.Addr)
 	if err != nil {
 		return err.Error(), err
 	}

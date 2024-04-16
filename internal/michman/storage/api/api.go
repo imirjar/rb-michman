@@ -7,21 +7,22 @@ import (
 )
 
 type API struct {
-	Client http.Client
-	Path   string
+	Client      http.Client
+	Path        string
+	ContentType string
 }
 
 func NewAPI() *API {
 	api := &API{
-		Client: http.Client{},
-		Path:   "http://localhost:8080/reports/list/",
+		Client:      http.Client{},
+		ContentType: "application/json",
 	}
 	return api
 }
 
-func (api API) GetDiverReports(ctx context.Context, id string) (string, error) {
+func (api API) GetDiverReports(ctx context.Context, path string) (string, error) {
 
-	response, err := api.Client.Post(api.Path, "application/json", nil)
+	response, err := api.Client.Post(path, api.ContentType, nil)
 	if err != nil {
 		return err.Error(), err
 	}
