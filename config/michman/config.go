@@ -1,7 +1,16 @@
 package michman
 
-type MichmanConfig struct{}
+import "github.com/caarlos0/env/v10"
 
-func NewDiverConfig() *MichmanConfig {
-	return &MichmanConfig{}
+type MichmanConfig struct {
+	Port   string `env:"PORT"`
+	Secret string `env:"DB_PATH"`
+}
+
+func NewMichmanConfig() *MichmanConfig {
+	conf := MichmanConfig{}
+	if err := env.Parse(&conf); err != nil {
+		panic(err)
+	}
+	return &conf
 }
