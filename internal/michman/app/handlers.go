@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/imirjar/Michman/internal/michman/models"
@@ -32,11 +31,11 @@ func (a *App) DiverInfoHandler() http.HandlerFunc {
 		var diver models.Diver
 		err := json.NewDecoder(r.Body).Decode(&diver)
 		if err != nil {
-			log.Println("HANDLER ExecuteHandler Decode ERROR", err)
+			// log.Println("HANDLER ExecuteHandler Decode ERROR", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		log.Print(diver)
+		// log.Print(diver)
 		divers, err := a.Service.DiverInfo(r.Context(), diver.Id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)

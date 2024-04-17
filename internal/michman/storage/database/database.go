@@ -32,13 +32,13 @@ func (s Storage) GetDivers(ctx context.Context) (string, error) {
 
 	conn, err := db.Conn(ctx)
 	if err != nil {
-		log.Print("Conn")
+		// log.Print("Conn")
 		return err.Error(), err
 	}
 
 	rows, err := conn.QueryContext(ctx, "SELECT * FROM divers;")
 	if err != nil {
-		log.Print("QueryContext")
+		// log.Print("QueryContext")
 		return err.Error(), err
 	}
 
@@ -47,7 +47,7 @@ func (s Storage) GetDivers(ctx context.Context) (string, error) {
 	for rows.Next() {
 		var diver models.Diver
 		if err = rows.Scan(&diver.Id, &diver.Name, &diver.Addr); err != nil {
-			log.Print("Scan error")
+			// log.Print("Scan error")
 			return err.Error(), err
 		}
 		divers = append(divers, diver)
@@ -74,14 +74,14 @@ func (s Storage) GetDiver(ctx context.Context, id string) (models.Diver, error) 
 
 	conn, err := db.Conn(ctx)
 	if err != nil {
-		log.Print("Conn")
+		// log.Print("Conn")
 		return diver, err
 	}
 
 	row := conn.QueryRowContext(ctx, "SELECT * FROM divers WHERE id=$1;", id)
 
 	if err = row.Scan(&diver.Id, &diver.Name, &diver.Addr); err != nil {
-		log.Print("Scan error")
+		// log.Print("Scan error")
 		return diver, err
 	}
 

@@ -10,8 +10,8 @@ type TargetDB struct {
 	db *pgx.Conn
 }
 
-func NewTargetDB() *TargetDB {
-	conn, err := pgx.Connect(context.Background(), "postgres://postgres:postgres@localhost:5432/praktikum?sslmode=disable")
+func NewTargetDB(dbConn string) *TargetDB {
+	conn, err := pgx.Connect(context.Background(), dbConn)
 	if err != nil {
 		panic(err)
 	}
