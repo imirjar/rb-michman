@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/caarlos0/env/v10"
@@ -26,7 +25,7 @@ func NewConfig() *Config {
 	if err := env.Parse(&conf); err != nil {
 		panic(err)
 	}
-	fmt.Printf("%+v\n", conf)
+	// fmt.Printf("%+v\n", conf)
 	return &conf
 }
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/imirjar/Michman/config"
+	"github.com/imirjar/Michman/internal/diver/app/middleware"
 	"github.com/imirjar/Michman/internal/diver/service"
 )
 
@@ -15,11 +16,13 @@ type Service interface {
 	ReportsList(ctx context.Context) (string, error)
 }
 
+type Middleware interface {
+}
+
 type App struct {
-	config  Config
-	Secret  string
-	Service Service
-	Server  *http.Server
+	config     Config
+	service    Service
+	middleware Middleware
 }
 
 type Config interface {
@@ -31,12 +34,15 @@ type Config interface {
 func NewApp() *App {
 	return &App{
 		config:  config.NewConfig(),
-		Service: service.NewService(),
+		service: service.NewService(),
 	}
 }
 
 func (a *App) Run(ctx context.Context) error {
 	router := chi.NewRouter()
+
+	router.Use(middleware.Encryptor(a.config.GetSecret()))
+
 	router.Route("/reports", func(update chi.Router) {
 		update.Post("/execute/", a.ExecuteHandler)
 		update.Post("/list/", a.ReportsListHandler)
