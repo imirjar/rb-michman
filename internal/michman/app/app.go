@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/imirjar/Michman/config"
 	"github.com/imirjar/Michman/internal/michman/service"
+	"github.com/imirjar/Michman/pkg/middleware"
 )
 
 type Service interface {
@@ -35,6 +36,8 @@ func NewApp() *App {
 
 func (a *App) Run(ctx context.Context) error {
 	router := chi.NewRouter()
+
+	router.Use(middleware.Encryptor(a.config.GetSecret()))
 
 	router.Get("/", a.Hello)
 

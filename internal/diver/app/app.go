@@ -7,8 +7,8 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/imirjar/Michman/config"
-	"github.com/imirjar/Michman/internal/diver/app/middleware"
 	"github.com/imirjar/Michman/internal/diver/service"
+	"github.com/imirjar/Michman/pkg/middleware"
 )
 
 type Service interface {
@@ -16,13 +16,9 @@ type Service interface {
 	ReportsList(ctx context.Context) (string, error)
 }
 
-type Middleware interface {
-}
-
 type App struct {
-	config     Config
-	service    Service
-	middleware Middleware
+	config  Config
+	service Service
 }
 
 type Config interface {
