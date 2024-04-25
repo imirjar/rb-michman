@@ -8,6 +8,7 @@ import (
 )
 
 type Config struct {
+	Auth          string `env:"AUTH_ADDR"`
 	Diver         string `env:"DIVER_ADDR"`
 	Michman       string `env:"MICHMAN_ADDR"`
 	Secret        string `env:"SECRET"`
@@ -27,6 +28,10 @@ func NewConfig() *Config {
 	}
 	// fmt.Printf("%+v\n", conf)
 	return &conf
+}
+
+func (c *Config) GetAuthAddr() string {
+	return c.Auth
 }
 
 func (c *Config) GetDiverAddr() string {
