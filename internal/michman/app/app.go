@@ -8,12 +8,13 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/imirjar/Michman/config"
 	"github.com/imirjar/Michman/internal/michman/app/middleware"
+	"github.com/imirjar/Michman/internal/michman/models"
 	"github.com/imirjar/Michman/internal/michman/service"
 )
 
 type Service interface {
-	DiverList(context.Context) (string, error)
-	DiverInfo(context.Context, string) (string, error)
+	DiverList(context.Context) ([]models.Diver, error)
+	DiverReports(context.Context, string) ([]models.Report, error)
 }
 
 type App struct {
@@ -46,7 +47,7 @@ func (a *App) Run(ctx context.Context) error {
 	router.Post("/divers/", a.DiversListHandler())
 
 	router.Route("/diver", func(diver chi.Router) {
-		diver.Post("/info/", a.DiverInfoHandler())
+		diver.Post("/info/", a.DiverReportsHandler())
 	})
 
 	srv := &http.Server{

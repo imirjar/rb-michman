@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -10,12 +11,9 @@ func Encryptor(secret, authPath string) func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if secret != "" {
 				hashHeader := r.Header.Get("jwt")
-
 				if hashHeader != "" {
-
-					if !auth(hashHeader, "http//"+authPath+"/token/view/") {
-						log.Print("YOU SHALL NOT PASS!")
-						http.Error(w, "unvalid secret", http.StatusForbidden)
+					if err := auth(hashHeader, authPath); err != nil {
+						http.Error(w, err.Error(), http.StatusForbidden)
 						return
 					}
 				}
@@ -25,25 +23,29 @@ func Encryptor(secret, authPath string) func(next http.Handler) http.Handler {
 	}
 }
 
-func auth(header, authPath string) bool {
+func auth(header, authPath string) error {
+	absPath := fmt.Sprintf("http://" + authPath + "/token/view/")
 	client := http.Client{}
-	req, err := http.NewRequest("POST", authPath, nil)
-	req.Header.Add("jwt", header)
+
+	req, err := http.NewRequest("POST", absPath, nil)
 	if err != nil {
-		log.Print("I CANT REQUEST")
-		return false
+		// log.Print("I CANT REQUEST")
+		return err
 	}
+
+	req.Header.Add("jwt", header)
+	req.Header.Set("Content-Type", "application/json")
 
 	response, err := client.Do(req)
 	if err != nil {
 		log.Println(err)
-		return false
+		return err
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode == 200 {
-		return true
+		return nil
 	} else {
-		return false
+		return err
 	}
 }

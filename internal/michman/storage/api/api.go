@@ -2,8 +2,10 @@ package api
 
 import (
 	"context"
-	"io"
+	"encoding/json"
 	"net/http"
+
+	"github.com/imirjar/Michman/internal/michman/models"
 )
 
 type API struct {
@@ -20,17 +22,18 @@ func NewAPI() *API {
 	return api
 }
 
-func (api API) GetDiverReports(ctx context.Context, path string) (string, error) {
-
+func (api API) GetDiverReports(ctx context.Context, path string) ([]models.Report, error) {
+	var reports []models.Report
 	response, err := api.Client.Post(path, api.ContentType, nil)
 	if err != nil {
-		return err.Error(), err
+		return nil, err
 	}
 	defer response.Body.Close()
-	body, err := io.ReadAll(response.Body) // response body is []byte
+
+	err = json.NewDecoder(response.Body).Decode(&reports)
 	if err != nil {
-		return err.Error(), err
+		return nil, err
 	}
 
-	return string(body), nil
+	return reports, nil
 }

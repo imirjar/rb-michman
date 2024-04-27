@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/imirjar/Michman/config"
+	"github.com/imirjar/Michman/internal/auth/app/middleware"
 	"github.com/imirjar/Michman/internal/auth/models"
 	"github.com/imirjar/Michman/internal/auth/service"
 )
@@ -37,6 +38,8 @@ func NewApp() *App {
 
 func (a *App) Run(ctx context.Context) error {
 	router := chi.NewRouter()
+
+	router.Use(middleware.REST())
 
 	router.Get("/", a.Hello)
 
