@@ -33,10 +33,13 @@ func (a *App) CreateJWT(w http.ResponseWriter, r *http.Request) {
 func (a *App) ValidateJWT(w http.ResponseWriter, r *http.Request) {
 	token := r.Header.Get("jwt")
 
-	userID := a.service.GetUserID(r.Context(), token)
+	if err := a.service.VerifyToken(r.Context(), token); err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(fmt.Sprint(userID)))
+	w.Write([]byte("SUCCESS"))
 }
 
 func (a *App) CreateUser(w http.ResponseWriter, r *http.Request) {

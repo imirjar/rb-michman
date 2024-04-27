@@ -66,7 +66,7 @@ func (r *ReportsStore) GetAllReports(ctx context.Context) (string, error) {
 	}
 	defer conn.Close()
 
-	rows, err := conn.QueryContext(ctx, "SELECT * FROM reports")
+	rows, err := conn.QueryContext(ctx, "SELECT * FROM reports;")
 	if err != nil {
 		return err.Error(), err
 	}

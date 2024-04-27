@@ -28,6 +28,12 @@ go run cmd/michman/main.go
 
 
 ## Diver
+
+If you need you could run test db docker container
+```
+docker run --name postgres -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=praktikum -d postgres:latest
+```
+
 1) Input those variables from ./.env file: \
 ```
 DIVER_ADDR     --> address where app will start\

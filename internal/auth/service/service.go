@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -57,7 +59,25 @@ func (s *Service) GetUserID(ctx context.Context, token string) int {
 	jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
 		return []byte(s.config.GetSecret()), nil
 	})
+	log.Println(claims.Valid())
 	return claims.UserID
+}
+
+func (s *Service) VerifyToken(ctx context.Context, tokenString string) error {
+	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+		return []byte(s.config.GetSecret()), nil
+	})
+	if err != nil {
+		log.Print("ERR")
+		return err
+	}
+
+	if !token.Valid {
+		log.Print("ERR VALID")
+		return fmt.Errorf("invalid token")
+	}
+
+	return nil
 }
 
 func (s *Service) CreateNewUser(ctx context.Context, user models.User) (models.User, error) {

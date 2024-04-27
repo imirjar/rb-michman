@@ -7,8 +7,8 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/imirjar/Michman/config"
+	"github.com/imirjar/Michman/internal/michman/app/middleware"
 	"github.com/imirjar/Michman/internal/michman/service"
-	"github.com/imirjar/Michman/pkg/middleware"
 )
 
 type Service interface {
@@ -22,6 +22,7 @@ type App struct {
 }
 
 type Config interface {
+	GetAuthAddr() string
 	GetMichmanAddr() string //allow req only for this addr
 	GetSecret() string
 }
@@ -37,7 +38,8 @@ func NewApp() *App {
 func (a *App) Run(ctx context.Context) error {
 	router := chi.NewRouter()
 
-	router.Use(middleware.Encryptor(a.config.GetSecret()))
+	router.Use(middleware.Encryptor(a.config.GetSecret(), a.config.GetAuthAddr()))
+	router.Use(middleware.REST())
 
 	router.Get("/", a.Hello)
 

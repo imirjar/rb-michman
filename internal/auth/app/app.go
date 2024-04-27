@@ -14,6 +14,7 @@ import (
 type Service interface {
 	BuildJWTString(context.Context, models.User) (string, error)
 	GetUserID(context.Context, string) int
+	VerifyToken(ctx context.Context, tokenString string) error
 }
 
 type Config interface {
@@ -40,12 +41,12 @@ func (a *App) Run(ctx context.Context) error {
 	router.Get("/", a.Hello)
 
 	router.Route("/token", func(token chi.Router) {
-		token.Post("/create", a.CreateJWT)
-		token.Post("/view", a.ValidateJWT)
+		token.Post("/create/", a.CreateJWT)
+		token.Post("/view/", a.ValidateJWT)
 	})
 
 	router.Route("/user", func(auth chi.Router) {
-		auth.Post("/create", a.CreateUser)
+		auth.Post("/create/", a.CreateUser)
 	})
 
 	srv := &http.Server{
