@@ -8,7 +8,13 @@ type Diver struct {
 }
 
 type Report struct {
-	Id    string `json:"id"`
-	Name  string `json:"name"`
-	Query string `json:"query"`
+	Id   string `json:"id"`
+	Name string `json:"name"`
+	Data string `json:"data,omitempty"`
 }
+
+// type ExecReport struct {
+// 	DiverId  string `json:"diver_id"`
+// 	ReportId string `json:"report_id"`
+// 	Report   Report `json:"report"`
+// }

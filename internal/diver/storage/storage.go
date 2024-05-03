@@ -12,29 +12,24 @@ type Config interface {
 	GetDiverTargetDB() string
 }
 
+type ReportsStore interface {
+	GetQuery(ctx context.Context, id string) (string, error)
+	GetAllReports(ctx context.Context) (string, error)
+}
+
+type Target interface {
+	ExecuteQuery(ctx context.Context, query string) ([]map[string]any, error)
+}
+
 type Storage struct {
-	config       Config
-	ReportsStore *reports.ReportsStore
-	Target       *target.TargetDB
+	ReportsStore
+	Target
 }
 
 func NewStorage() *Storage {
-	store := Storage{
-		config: config.NewConfig(),
+	var config Config = config.NewConfig()
+	return &Storage{
+		ReportsStore: reports.NewReportStore(),
+		Target:       target.NewTargetDB(config.GetDiverTargetDB()),
 	}
-	store.ReportsStore = reports.NewReportStore()
-	store.Target = target.NewTargetDB(store.config.GetDiverTargetDB())
-	return &store
-}
-
-func (s Storage) GetQuery(ctx context.Context, id string) (string, error) {
-	return s.ReportsStore.GetQuery(ctx, id)
-}
-
-func (s Storage) ExecuteQuery(ctx context.Context, query string) (string, error) {
-	return s.Target.SELECT(ctx, query)
-}
-
-func (s Storage) GetAllReports(ctx context.Context) (string, error) {
-	return s.ReportsStore.GetAllReports(ctx)
 }

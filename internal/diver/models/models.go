@@ -2,10 +2,7 @@ package models
 
 type Report struct {
 	Id    string `json:"id"`
-	Query string `json:"query"`
-}
-
-type Treasure struct {
-	Id   string `json:"id"`
-	Data string `json:"data"`
+	Name  string `json:"name,omitempty"`
+	Query string `json:"query,omitempty"`
+	Data  string `json:"data,omitempty"`
 }

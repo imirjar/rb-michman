@@ -15,6 +15,7 @@ import (
 type Service interface {
 	DiverList(context.Context) ([]models.Diver, error)
 	DiverReports(context.Context, string) ([]models.Report, error)
+	GetDiverReportData(ctx context.Context, ex models.Diver) (models.Report, error)
 }
 
 type App struct {
@@ -47,7 +48,8 @@ func (a *App) Run(ctx context.Context) error {
 	router.Post("/divers/", a.DiversListHandler())
 
 	router.Route("/diver", func(diver chi.Router) {
-		diver.Post("/info/", a.DiverReportsHandler())
+		diver.Post("/reports/", a.DiverReportsHandler())
+		diver.Post("/execute/", a.DiverExecuteReportHandler())
 	})
 
 	srv := &http.Server{

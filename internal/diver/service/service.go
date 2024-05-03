@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/imirjar/Michman/internal/diver/storage"
 )
@@ -12,7 +13,7 @@ type Service struct {
 
 type Storage interface {
 	GetQuery(context.Context, string) (string, error)
-	ExecuteQuery(context.Context, string) (string, error)
+	ExecuteQuery(context.Context, string) ([]map[string]any, error)
 	GetAllReports(ctx context.Context) (string, error)
 }
 
@@ -33,7 +34,12 @@ func (s Service) Execute(ctx context.Context, id string) (string, error) {
 		return "", err
 	}
 
-	return data, nil
+	m, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+
+	return string(m), nil
 }
 
 func (s Service) ReportsList(ctx context.Context) (string, error) {

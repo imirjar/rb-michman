@@ -10,7 +10,7 @@ import (
 )
 
 func (a *App) ExecuteHandler(w http.ResponseWriter, r *http.Request) {
-	var report models.Treasure
+	var report models.Report
 	err := json.NewDecoder(r.Body).Decode(&report)
 	if err != nil {
 		log.Println("HANDLER ExecuteHandler Decode ERROR", err)
@@ -37,6 +37,7 @@ func (a *App) ExecuteHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) ReportsListHandler(w http.ResponseWriter, r *http.Request) {
+
 	result, err := a.service.ReportsList(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

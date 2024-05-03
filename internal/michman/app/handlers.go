@@ -45,8 +45,23 @@ func (a *App) DiverReportsHandler() http.HandlerFunc {
 	}
 }
 
-func (a *App) ExecuteReportHandler() http.HandlerFunc {
+func (a *App) DiverExecuteReportHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
+		var diver models.Diver
+		err := json.NewDecoder(r.Body).Decode(&diver)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		data, err := a.Service.GetDiverReportData(r.Context(), diver)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(data); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 	}
 }

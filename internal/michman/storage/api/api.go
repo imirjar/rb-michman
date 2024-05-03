@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -10,7 +11,6 @@ import (
 
 type API struct {
 	Client      http.Client
-	Path        string
 	ContentType string
 }
 
@@ -24,7 +24,7 @@ func NewAPI() *API {
 
 func (api API) GetDiverReports(ctx context.Context, path string) ([]models.Report, error) {
 	var reports []models.Report
-	response, err := api.Client.Post(path, api.ContentType, nil)
+	response, err := api.Client.Post(path+"/reports/list/", api.ContentType, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -36,4 +36,27 @@ func (api API) GetDiverReports(ctx context.Context, path string) ([]models.Repor
 	}
 
 	return reports, nil
+}
+
+func (api API) ExecuteDiverReport(ctx context.Context, addr, repId string) (models.Report, error) {
+	var report = models.Report{
+		Id: repId,
+	}
+	var buf bytes.Buffer
+	err := json.NewEncoder(&buf).Encode(report)
+	if err != nil {
+		return report, err
+	}
+
+	response, err := api.Client.Post(addr+"/reports/execute/", api.ContentType, &buf)
+	if err != nil {
+		return report, err
+	}
+	defer response.Body.Close()
+
+	err = json.NewDecoder(response.Body).Decode(&report)
+	if err != nil {
+		return report, err
+	}
+	return report, nil
 }
