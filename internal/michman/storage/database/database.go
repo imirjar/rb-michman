@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"log"
 	"time"
 
@@ -23,32 +22,28 @@ func NewStorage() *Storage {
 	}
 }
 
-func (s Storage) GetDivers(ctx context.Context) (string, error) {
+func (s Storage) GetDivers(ctx context.Context) ([]models.Diver, error) {
 	db, err := sql.Open(s.driver, s.path)
 	if err != nil {
-		return err.Error(), err
+		return nil, err
 	}
 	defer db.Close()
 
 	conn, err := db.Conn(ctx)
 	if err != nil {
-		log.Print("Conn")
-		return err.Error(), err
+		return nil, err
 	}
 
 	rows, err := conn.QueryContext(ctx, "SELECT * FROM divers;")
 	if err != nil {
-		log.Print("QueryContext")
-		return err.Error(), err
+		return nil, err
 	}
 
-	// var data string
 	divers := make([]models.Diver, 0)
 	for rows.Next() {
 		var diver models.Diver
 		if err = rows.Scan(&diver.Id, &diver.Name, &diver.Addr); err != nil {
-			log.Print("Scan error")
-			return err.Error(), err
+			return nil, err
 		}
 		divers = append(divers, diver)
 	}
@@ -56,12 +51,7 @@ func (s Storage) GetDivers(ctx context.Context) (string, error) {
 		log.Fatal(err)
 	}
 
-	data, err := json.Marshal(divers)
-	if err != nil {
-		return err.Error(), err
-	}
-
-	return string(data), nil
+	return divers, nil
 }
 
 func (s Storage) GetDiver(ctx context.Context, id string) (models.Diver, error) {
@@ -74,14 +64,14 @@ func (s Storage) GetDiver(ctx context.Context, id string) (models.Diver, error) 
 
 	conn, err := db.Conn(ctx)
 	if err != nil {
-		log.Print("Conn")
+		// log.Print("Conn")
 		return diver, err
 	}
 
 	row := conn.QueryRowContext(ctx, "SELECT * FROM divers WHERE id=$1;", id)
 
 	if err = row.Scan(&diver.Id, &diver.Name, &diver.Addr); err != nil {
-		log.Print("Scan error")
+		// log.Print("Scan error")
 		return diver, err
 	}
 

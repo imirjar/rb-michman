@@ -2,33 +2,63 @@ package target
 
 import (
 	"context"
+	"database/sql"
 
-	"github.com/jackc/pgx/v5"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-type TargetDB struct {
-	db *pgx.Conn
+type Config interface {
+	GetDiverTargetDB() string
 }
 
-func NewTargetDB() *TargetDB {
-	conn, err := pgx.Connect(context.Background(), "postgres://postgres:postgres@localhost:5432/praktikum?sslmode=disable")
+type TargetDB struct {
+	pool *sql.DB
+}
+
+func NewTargetDB(dbconn string) *TargetDB {
+	pool, err := sql.Open("pgx", dbconn)
 	if err != nil {
 		panic(err)
 	}
-
 	return &TargetDB{
-		db: conn,
+		pool: pool,
 	}
 }
 
-func (t *TargetDB) SELECT(ctx context.Context, query string) (string, error) {
-	rows := t.db.QueryRow(ctx, query)
-
-	var value string
-	err := rows.Scan(&value)
+func (t *TargetDB) ExecuteQuery(ctx context.Context, query string) ([]map[string]any, error) {
+	rows, err := t.pool.QueryContext(ctx, query)
 	if err != nil {
-		return err.Error(), err
+		return nil, err
 	}
 
-	return value, nil
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	var allMaps []map[string]any
+	// err = rows.Scan(&value)
+	// if err != nil {
+	// 	return err.Error(), err
+	// }
+	// log.Print(value)
+	for rows.Next() {
+		values := make([]interface{}, len(columns))
+		pointers := make([]interface{}, len(columns))
+		for i := range values {
+			pointers[i] = &values[i]
+		}
+		err = rows.Scan(pointers...)
+		if err != nil {
+			return nil, err
+		}
+		resultMap := make(map[string]interface{})
+		for i, val := range values {
+			// fmt.Printf("Adding key=%s val=%v\n", columns[i], val)
+			resultMap[columns[i]] = val
+		}
+		allMaps = append(allMaps, resultMap)
+	}
+
+	return allMaps, nil
 }

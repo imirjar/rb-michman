@@ -66,7 +66,7 @@ func (r *ReportsStore) GetAllReports(ctx context.Context) (string, error) {
 	}
 	defer conn.Close()
 
-	rows, err := conn.QueryContext(ctx, "SELECT * FROM reports")
+	rows, err := conn.QueryContext(ctx, "SELECT * FROM reports;")
 	if err != nil {
 		return err.Error(), err
 	}
@@ -75,7 +75,7 @@ func (r *ReportsStore) GetAllReports(ctx context.Context) (string, error) {
 	for rows.Next() {
 
 		var rep models.Report
-		err = rows.Scan(&rep.Id, &rep.Query)
+		err = rows.Scan(&rep.Id, &rep.Name, &rep.Query)
 		if err != nil {
 			return err.Error(), err
 		}

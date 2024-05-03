@@ -3,21 +3,22 @@ package storage
 import (
 	"context"
 
+	"github.com/imirjar/Michman/config"
 	"github.com/imirjar/Michman/internal/diver/storage/reports"
 	"github.com/imirjar/Michman/internal/diver/storage/target"
 )
 
-// mongo db with reports
-// must connect sqlite db file
-type ReportsStore interface {
-	GetQuery(context.Context, string) (string, error)
-	GetAllReports(context.Context) (string, error)
+type Config interface {
+	GetDiverTargetDB() string
 }
 
-// target db where reports from mongo are sending
-// must connect db by env file
+type ReportsStore interface {
+	GetQuery(ctx context.Context, id string) (string, error)
+	GetAllReports(ctx context.Context) (string, error)
+}
+
 type Target interface {
-	SELECT(context.Context, string) (string, error)
+	ExecuteQuery(ctx context.Context, query string) ([]map[string]any, error)
 }
 
 type Storage struct {
@@ -26,23 +27,9 @@ type Storage struct {
 }
 
 func NewStorage() *Storage {
+	var config Config = config.NewConfig()
 	return &Storage{
 		ReportsStore: reports.NewReportStore(),
-		Target:       target.NewTargetDB(),
+		Target:       target.NewTargetDB(config.GetDiverTargetDB()),
 	}
 }
-
-func (s Storage) GetQuery(ctx context.Context, id string) (string, error) {
-	return s.ReportsStore.GetQuery(ctx, id)
-}
-
-func (s Storage) ExecuteQuery(ctx context.Context, query string) (string, error) {
-	return s.Target.SELECT(ctx, query)
-}
-
-// CREATE TABLE IF NOT EXISTS metrics (
-// 	id varchar NOT NULL,
-// 	"type" varchar NOT NULL,s
-// 	value float8 NULL,
-// 	CONSTRAINT metrics_pk PRIMARY KEY (id)
-// );

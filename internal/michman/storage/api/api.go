@@ -1,14 +1,16 @@
 package api
 
 import (
+	"bytes"
 	"context"
-	"io"
+	"encoding/json"
 	"net/http"
+
+	"github.com/imirjar/Michman/internal/michman/models"
 )
 
 type API struct {
 	Client      http.Client
-	Path        string
 	ContentType string
 }
 
@@ -20,17 +22,41 @@ func NewAPI() *API {
 	return api
 }
 
-func (api API) GetDiverReports(ctx context.Context, path string) (string, error) {
-
-	response, err := api.Client.Post(path, api.ContentType, nil)
+func (api API) GetDiverReports(ctx context.Context, path string) ([]models.Report, error) {
+	var reports []models.Report
+	response, err := api.Client.Post(path+"/reports/list/", api.ContentType, nil)
 	if err != nil {
-		return err.Error(), err
+		return nil, err
 	}
 	defer response.Body.Close()
-	body, err := io.ReadAll(response.Body) // response body is []byte
+
+	err = json.NewDecoder(response.Body).Decode(&reports)
 	if err != nil {
-		return err.Error(), err
+		return nil, err
 	}
 
-	return string(body), nil
+	return reports, nil
+}
+
+func (api API) ExecuteDiverReport(ctx context.Context, addr, repId string) (models.Report, error) {
+	var report = models.Report{
+		Id: repId,
+	}
+	var buf bytes.Buffer
+	err := json.NewEncoder(&buf).Encode(report)
+	if err != nil {
+		return report, err
+	}
+
+	response, err := api.Client.Post(addr+"/reports/execute/", api.ContentType, &buf)
+	if err != nil {
+		return report, err
+	}
+	defer response.Body.Close()
+
+	err = json.NewDecoder(response.Body).Decode(&report)
+	if err != nil {
+		return report, err
+	}
+	return report, nil
 }

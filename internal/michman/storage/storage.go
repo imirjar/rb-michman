@@ -9,11 +9,12 @@ import (
 )
 
 type API interface {
-	GetDiverReports(context.Context, string) (string, error)
+	GetDiverReports(context.Context, string) ([]models.Report, error)
+	ExecuteDiverReport(context.Context, string, string) (models.Report, error)
 }
 
 type DB interface {
-	GetDivers(context.Context) (string, error)
+	GetDivers(context.Context) ([]models.Diver, error)
 	GetDiver(context.Context, string) (models.Diver, error)
 }
 

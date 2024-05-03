@@ -6,40 +6,57 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/imirjar/Michman/config"
+	"github.com/imirjar/Michman/internal/michman/app/middleware"
+	"github.com/imirjar/Michman/internal/michman/models"
 	"github.com/imirjar/Michman/internal/michman/service"
 )
 
 type Service interface {
-	DiverList(context.Context) (string, error)
-	DiverInfo(context.Context, string) (string, error)
+	DiverList(context.Context) ([]models.Diver, error)
+	DiverReports(context.Context, string) ([]models.Report, error)
+	GetDiverReportData(ctx context.Context, ex models.Diver) (models.Report, error)
 }
 
 type App struct {
+	config  Config
 	Service Service
 }
 
-func NewApp(addr string) *App {
+type Config interface {
+	GetAuthAddr() string
+	GetMichmanAddr() string //allow req only for this addr
+	GetSecret() string
+}
+
+func NewApp() *App {
+
 	return &App{
+		config:  config.NewConfig(),
 		Service: service.NewService(),
 	}
 }
 
 func (a *App) Run(ctx context.Context) error {
-	log.Print("Run app")
 	router := chi.NewRouter()
+
+	router.Use(middleware.Encryptor(a.config.GetSecret(), a.config.GetAuthAddr()))
+	router.Use(middleware.REST())
 
 	router.Get("/", a.Hello)
 
 	router.Post("/divers/", a.DiversListHandler())
 
 	router.Route("/diver", func(diver chi.Router) {
-		diver.Post("/info/", a.DiverInfoHandler())
+		diver.Post("/reports/", a.DiverReportsHandler())
+		diver.Post("/execute/", a.DiverExecuteReportHandler())
 	})
 
-	gateway := &http.Server{
-		Addr:    "localhost:9090",
+	srv := &http.Server{
+		Addr:    a.config.GetMichmanAddr(),
 		Handler: router,
 	}
 
-	return gateway.ListenAndServe()
+	log.Printf("Run app on PORT %s", a.config.GetMichmanAddr())
+	return srv.ListenAndServe()
 }

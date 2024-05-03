@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"github.com/imirjar/Michman/config"
 	"github.com/imirjar/Michman/internal/diver/service"
 )
 
@@ -15,30 +16,39 @@ type Service interface {
 }
 
 type App struct {
-	Service Service
+	config  Config
+	service Service
 }
 
-func NewApp(addr string) *App {
+type Config interface {
+	GetDiverAddr() string
+	GetMichmanAddr() string //allow req only for this addr
+	GetSecret() string
+}
+
+func NewApp() *App {
 	return &App{
-		Service: service.NewService(),
+		config:  config.NewConfig(),
+		service: service.NewService(),
 	}
 }
 
 func (a *App) Run(ctx context.Context) error {
-	log.Print("Run app")
-
 	router := chi.NewRouter()
+
+	// router.Use(middleware.Encryptor(a.config.GetSecret()))
+
 	router.Route("/reports", func(update chi.Router) {
 		update.Post("/execute/", a.ExecuteHandler)
 		update.Post("/list/", a.ReportsListHandler)
 	})
 
 	//for new usecases add new route
-
-	gateway := &http.Server{
-		Addr:    "localhost:8080",
+	srv := &http.Server{
+		Addr:    a.config.GetDiverAddr(),
 		Handler: router,
 	}
 
-	return gateway.ListenAndServe()
+	log.Printf("Run app on PORT %s", a.config.GetDiverAddr())
+	return srv.ListenAndServe()
 }

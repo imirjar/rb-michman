@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
-	app := app.NewApp("localhost:9090/")
-	app.Run(context.Background())
+	if err := app.NewApp().Run(context.Background()); err != nil {
+		panic(err.Error())
+	}
 }
