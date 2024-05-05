@@ -37,11 +37,6 @@ func (t *TargetDB) ExecuteQuery(ctx context.Context, query string) ([]map[string
 	}
 
 	var allMaps []map[string]any
-	// err = rows.Scan(&value)
-	// if err != nil {
-	// 	return err.Error(), err
-	// }
-	// log.Print(value)
 	for rows.Next() {
 		values := make([]interface{}, len(columns))
 		pointers := make([]interface{}, len(columns))
@@ -54,7 +49,6 @@ func (t *TargetDB) ExecuteQuery(ctx context.Context, query string) ([]map[string
 		}
 		resultMap := make(map[string]interface{})
 		for i, val := range values {
-			// fmt.Printf("Adding key=%s val=%v\n", columns[i], val)
 			resultMap[columns[i]] = val
 		}
 		allMaps = append(allMaps, resultMap)

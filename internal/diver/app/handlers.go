@@ -32,8 +32,6 @@ func (a *App) ExecuteHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	// w.Write([]byte(report))
-
 }
 
 func (a *App) ReportsListHandler(w http.ResponseWriter, r *http.Request) {
