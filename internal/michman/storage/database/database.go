@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"log"
+	"time"
 
 	"github.com/imirjar/Michman/internal/michman/models"
 	_ "modernc.org/sqlite"
@@ -24,9 +25,21 @@ func NewStorage() *Storage {
 		panic(err)
 	}
 
-	return &Storage{
+	store := Storage{
 		dbConn: conn,
 	}
+
+	if err := store.Ping(); err != nil {
+		panic(err)
+	}
+
+	return &store
+}
+
+func (s *Storage) Ping() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+	return s.dbConn.PingContext(ctx)
 }
 
 func (s Storage) GetDivers(ctx context.Context) ([]models.Diver, error) {

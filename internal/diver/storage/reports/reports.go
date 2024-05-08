@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"time"
 
 	"github.com/imirjar/Michman/internal/diver/models"
 	_ "modernc.org/sqlite"
@@ -24,9 +25,21 @@ func NewReportStore() *ReportsStore {
 		panic(err)
 	}
 
-	return &ReportsStore{
+	store := ReportsStore{
 		dbConn: conn,
 	}
+
+	if err := store.Ping(); err != nil {
+		panic(err)
+	}
+
+	return &store
+}
+
+func (r *ReportsStore) Ping() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+	return r.dbConn.PingContext(ctx)
 }
 
 func (r *ReportsStore) GetQuery(ctx context.Context, id string) (string, error) {

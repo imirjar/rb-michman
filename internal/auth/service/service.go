@@ -16,13 +16,13 @@ type Config interface {
 	GetSecret() string
 }
 
-type Storage interface {
+type UserStore interface {
 	GetUserID(ctx context.Context, username string) (int, error)
 }
 
 type Service struct {
 	config  Config
-	storage Storage
+	storage UserStore
 }
 
 func NewService() *Service {
