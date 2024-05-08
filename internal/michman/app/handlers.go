@@ -18,10 +18,12 @@ func (a *App) DiversListHandler() http.HandlerFunc {
 		divers, err := a.Service.DiverList(r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(divers); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 	}
 }
@@ -37,10 +39,12 @@ func (a *App) DiverReportsHandler() http.HandlerFunc {
 		reports, err := a.Service.DiverReports(r.Context(), diver.Id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(reports); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 	}
 }
