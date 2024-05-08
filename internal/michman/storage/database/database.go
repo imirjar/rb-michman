@@ -4,37 +4,34 @@ import (
 	"context"
 	"database/sql"
 	"log"
-	"time"
 
 	"github.com/imirjar/Michman/internal/michman/models"
 	_ "modernc.org/sqlite"
 )
 
 type Storage struct {
-	driver string
-	path   string
+	dbConn *sql.Conn
 }
 
 func NewStorage() *Storage {
+	db, err := sql.Open("sqlite", "db/divers")
+	if err != nil {
+		panic(err)
+	}
+
+	conn, err := db.Conn(context.Background())
+	if err != nil {
+		panic(err)
+	}
+
 	return &Storage{
-		path:   "divers",
-		driver: "sqlite",
+		dbConn: conn,
 	}
 }
 
 func (s Storage) GetDivers(ctx context.Context) ([]models.Diver, error) {
-	db, err := sql.Open(s.driver, s.path)
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
 
-	conn, err := db.Conn(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	rows, err := conn.QueryContext(ctx, "SELECT * FROM divers;")
+	rows, err := s.dbConn.QueryContext(ctx, "SELECT * FROM divers;")
 	if err != nil {
 		return nil, err
 	}
@@ -56,36 +53,13 @@ func (s Storage) GetDivers(ctx context.Context) ([]models.Diver, error) {
 
 func (s Storage) GetDiver(ctx context.Context, id string) (models.Diver, error) {
 	var diver models.Diver
-	db, err := sql.Open(s.driver, s.path)
-	if err != nil {
-		return diver, err
-	}
-	defer db.Close()
 
-	conn, err := db.Conn(ctx)
-	if err != nil {
-		// log.Print("Conn")
-		return diver, err
-	}
+	row := s.dbConn.QueryRowContext(ctx, "SELECT * FROM divers WHERE id=$1;", id)
 
-	row := conn.QueryRowContext(ctx, "SELECT * FROM divers WHERE id=$1;", id)
-
-	if err = row.Scan(&diver.Id, &diver.Name, &diver.Addr); err != nil {
+	if err := row.Scan(&diver.Id, &diver.Name, &diver.Addr); err != nil {
 		// log.Print("Scan error")
 		return diver, err
 	}
 
 	return diver, nil
-}
-
-func (s *Storage) Ping() error {
-	db, err := sql.Open(s.driver, s.path)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-	return db.PingContext(ctx)
 }
