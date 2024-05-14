@@ -41,6 +41,8 @@ func (a *App) Run(ctx context.Context) error {
 	router := chi.NewRouter()
 
 	router.Use(middleware.Encryptor(a.config.GetSecret(), a.config.GetAuthAddr()))
+	// router.Use(middleware.Compressor())
+	router.Use(middleware.Logger())
 	router.Use(middleware.REST())
 
 	router.Get("/", a.Hello)

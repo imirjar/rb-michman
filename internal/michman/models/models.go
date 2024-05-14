@@ -13,8 +13,7 @@ type Report struct {
 	Data string `json:"data,omitempty"`
 }
 
-// type ExecReport struct {
-// 	DiverId  string `json:"diver_id"`
-// 	ReportId string `json:"report_id"`
-// 	Report   Report `json:"report"`
-// }
+type Target struct {
+	DiverId  string `json:"diver_id"`
+	ReportId string `json:"report_id"`
+}

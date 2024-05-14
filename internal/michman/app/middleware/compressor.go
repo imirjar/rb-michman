@@ -50,13 +50,13 @@ func Compressor(compressMethod string) func(next http.Handler) http.Handler {
 				if contentIsGzip {
 					decomBody, err := gzip.NewReader(r.Body)
 					if err != nil {
-						w.WriteHeader(http.StatusInternalServerError)
+						http.Error(w, err.Error(), http.StatusInternalServerError)
 						return
 					}
 					defer decomBody.Close()
 					r.Body = decomBody
 				} else {
-					w.WriteHeader(http.StatusInternalServerError)
+					http.Error(w, "", http.StatusInternalServerError)
 					return
 				}
 
