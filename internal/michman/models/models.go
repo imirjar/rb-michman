@@ -9,7 +9,7 @@ type Diver struct {
 
 type Report struct {
 	Id   string `json:"id"`
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 	Data string `json:"data,omitempty"`
 }
 
