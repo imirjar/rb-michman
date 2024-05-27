@@ -38,6 +38,7 @@ func (a *App) ReportsListHandler(w http.ResponseWriter, r *http.Request) {
 
 	result, err := a.service.ReportsList(r.Context())
 	if err != nil {
+		log.Println("HANDLER ExecuteHandler Encode ERROR", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

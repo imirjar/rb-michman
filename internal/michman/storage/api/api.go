@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
+	"time"
 
 	"github.com/imirjar/Michman/internal/michman/models"
 )
@@ -15,11 +17,13 @@ type API struct {
 }
 
 func NewAPI() *API {
-	api := &API{
-		Client:      http.Client{},
+	api := API{
+		Client: http.Client{
+			Timeout: 3 * time.Second,
+		},
 		ContentType: "application/json",
 	}
-	return api
+	return &api
 }
 
 func (api API) GetDiverReports(ctx context.Context, path string) ([]models.Report, error) {
@@ -30,6 +34,9 @@ func (api API) GetDiverReports(ctx context.Context, path string) ([]models.Repor
 	}
 	defer response.Body.Close()
 
+	if response.StatusCode >= 300 {
+		return reports, errors.New(response.Status)
+	}
 	err = json.NewDecoder(response.Body).Decode(&reports)
 	if err != nil {
 		return nil, err
@@ -53,6 +60,10 @@ func (api API) ExecuteDiverReport(ctx context.Context, addr, repId string) (mode
 		return report, err
 	}
 	defer response.Body.Close()
+
+	if response.StatusCode >= 300 {
+		return report, errors.New(response.Status)
+	}
 
 	err = json.NewDecoder(response.Body).Decode(&report)
 	if err != nil {

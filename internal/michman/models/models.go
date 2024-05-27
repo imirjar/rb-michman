@@ -9,12 +9,11 @@ type Diver struct {
 
 type Report struct {
 	Id   string `json:"id"`
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 	Data string `json:"data,omitempty"`
 }
 
-// type ExecReport struct {
-// 	DiverId  string `json:"diver_id"`
-// 	ReportId string `json:"report_id"`
-// 	Report   Report `json:"report"`
-// }
+type Target struct {
+	DiverId  string `json:"diver_id"`
+	ReportId string `json:"report_id"`
+}
