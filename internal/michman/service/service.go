@@ -18,9 +18,9 @@ type Service struct {
 	storage Storage
 }
 
-func NewService() *Service {
+func New() *Service {
 	return &Service{
-		storage: storage.NewStorage(),
+		storage: storage.New(),
 	}
 }
 

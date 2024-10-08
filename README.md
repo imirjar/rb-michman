@@ -6,7 +6,7 @@ Hi! My name is Michman and I can manage all of your databases in a single API. I
 
 >**Michman** is a single API that can manage all of existing divers.
 
->**AUTH** is an auth app which can generate JWT
+>**AUTH** you cam use https://github.com/imirjar/rb-auth for internal auth
 
 # INSTRUCTION
 

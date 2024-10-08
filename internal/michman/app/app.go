@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/imirjar/Michman/internal/michman/app/middleware"
 	"github.com/imirjar/Michman/internal/michman/models"
 	"github.com/imirjar/Michman/internal/michman/service"
+	authmdw "github.com/imirjar/rb-glue/middlewares/authentication"
 )
 
 type Service interface {
@@ -29,29 +31,32 @@ type Config interface {
 	GetSecret() string
 }
 
-func NewApp() *App {
+func New() *App {
 
 	return &App{
 		config:  config.NewConfig(),
-		Service: service.NewService(),
+		Service: service.New(),
 	}
 }
 
 func (a *App) Run(ctx context.Context) error {
 	router := chi.NewRouter()
 
-	router.Use(middleware.Encryptor(a.config.GetSecret(), a.config.GetAuthAddr()))
+	authpath := fmt.Sprintf("http://127.0.0.1:7070/token/validate")
+	log.Print(authpath)
+	// router.Use(middleware.Authenticator(a.config.GetSecret(), a.config.GetAuthAddr()))
+	router.Use(authmdw.Authenticate(authpath))
 	// router.Use(middleware.Compressor())
 	router.Use(middleware.Logger())
 	router.Use(middleware.REST())
 
-	router.Get("/", a.Hello)
+	router.Get("/", a.Ping())
 
-	router.Post("/divers/", a.DiversListHandler())
+	router.Post("/divers/", a.DiversList())
 
 	router.Route("/diver", func(diver chi.Router) {
-		diver.Post("/reports/", a.DiverReportsHandler())
-		diver.Post("/execute/", a.DiverExecuteReportHandler())
+		diver.Post("/reports/", a.ReportsList())
+		diver.Post("/execute/", a.ReportExecute())
 	})
 
 	srv := &http.Server{

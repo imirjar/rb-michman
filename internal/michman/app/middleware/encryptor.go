@@ -6,15 +6,15 @@ import (
 	"net/http"
 )
 
-func Encryptor(secret, authPath string) func(next http.Handler) http.Handler {
+func Authenticator(secret, authPath string) func(next http.Handler) http.Handler {
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if secret != "" {
-				hashHeader := r.Header.Get("jwt")
+				hashHeader := r.Header.Get("Authorization")
 
 				if !auth(hashHeader, authPath) {
-					http.Error(w, "", http.StatusForbidden)
+					http.Error(w, "Auth failed", http.StatusForbidden)
 					return
 				}
 
@@ -25,7 +25,7 @@ func Encryptor(secret, authPath string) func(next http.Handler) http.Handler {
 }
 
 func auth(header, authPath string) bool {
-	absPath := fmt.Sprintf("http://" + authPath + "/token/view/")
+	absPath := fmt.Sprintf("http://" + authPath + "/token/validate/")
 	client := http.Client{}
 
 	req, err := http.NewRequest("POST", absPath, nil)
