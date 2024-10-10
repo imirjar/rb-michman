@@ -45,7 +45,7 @@ func (a *App) Run(ctx context.Context) error {
 	authpath := fmt.Sprintf("http://127.0.0.1:7070/token/validate")
 	log.Print(authpath)
 	// router.Use(middleware.Authenticator(a.config.GetSecret(), a.config.GetAuthAddr()))
-	router.Use(authmdw.Authenticate(authpath))
+	router.Use(authmdw.Authenticate(authpath, authmdw.User{}))
 	// router.Use(middleware.Compressor())
 	router.Use(middleware.Logger())
 	router.Use(middleware.REST())
