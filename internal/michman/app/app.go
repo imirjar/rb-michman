@@ -9,21 +9,28 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/imirjar/Michman/config"
 	"github.com/imirjar/Michman/internal/michman/models"
-	"github.com/imirjar/Michman/internal/michman/service"
+	"github.com/imirjar/Michman/internal/michman/service/grazer"
+	"github.com/imirjar/Michman/internal/michman/service/reporter"
 	"github.com/imirjar/rb-glue/middlewares/authentication"
 	"github.com/imirjar/rb-glue/middlewares/contype"
 	"github.com/imirjar/rb-glue/middlewares/logger"
 )
 
-type Service interface {
-	DiverList(context.Context) ([]models.Diver, error)
+type Reporter interface {
 	DiverReports(context.Context, string) ([]models.Report, error)
 	GetDiverReportData(ctx context.Context, ex models.Diver) (models.Report, error)
 }
 
+type Grazer interface {
+	LoadConnections()   // read all connected divers, ping it, connect which is still alive
+	BackupConnections() // backup all connected divers connection info
+	DiverList(context.Context) ([]models.Diver, error)
+}
+
 type App struct {
-	config  Config
-	Service Service
+	config        Config
+	ReportService Reporter
+	GrazerService Grazer
 }
 
 type Config interface {
@@ -35,8 +42,9 @@ type Config interface {
 func New() *App {
 
 	return &App{
-		config:  config.NewConfig(),
-		Service: service.New(),
+		config:        config.NewConfig(),
+		ReportService: reporter.New(),
+		GrazerService: grazer.New(),
 	}
 }
 
@@ -53,16 +61,14 @@ func (a *App) Run(ctx context.Context) error {
 	// Check connection
 	router.Get("/", a.Ping())
 
-	router.Post("/divers/", a.DiversList())
-
-	router.Route("/diver", func(diver chi.Router) {
-		diver.Post("/reports/", a.ReportsList())
-		diver.Post("/execute/", a.ReportExecute())
+	// Get available divers
+	router.Get("/divers", a.DiversList())
+	router.Route("/diver/{id}", func(diver chi.Router) {
+		diver.Get("/", a.ReportsList())
+		diver.Post("/execute/{reportId}", a.ReportExecute())
 	})
 
-	router.Route("/connect", func(conn chi.Router) {
-		conn.Post("/diver/", a.ReportsList())
-	})
+	router.Post("/connect", a.ReportsList())
 
 	srv := &http.Server{
 		Addr:    a.config.GetMichmanAddr(),

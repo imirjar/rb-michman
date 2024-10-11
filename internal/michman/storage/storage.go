@@ -5,7 +5,7 @@ import (
 
 	"github.com/imirjar/Michman/internal/michman/models"
 	"github.com/imirjar/Michman/internal/michman/storage/api"
-	"github.com/imirjar/Michman/internal/michman/storage/database"
+	"github.com/imirjar/Michman/internal/michman/storage/memory"
 )
 
 type API interface {
@@ -13,19 +13,19 @@ type API interface {
 	ExecuteDiverReport(context.Context, string, string) (models.Report, error)
 }
 
-type DB interface {
-	GetDivers(context.Context) ([]models.Diver, error)
-	GetDiver(context.Context, string) (models.Diver, error)
+type Memory interface {
+	GetDivers(ctx context.Context) (map[string]models.Diver, error)
+	AddDiver([]models.Diver) (int, error)
 }
 
 type Storage struct {
-	DB
+	Memory
 	API
 }
 
 func New() *Storage {
 	return &Storage{
-		DB:  database.NewStorage(),
-		API: api.NewAPI(),
+		Memory: memory.New(),
+		API:    api.New(),
 	}
 }

@@ -1,4 +1,4 @@
-package service
+package reporter
 
 import (
 	"context"
@@ -8,7 +8,6 @@ import (
 )
 
 type Storage interface {
-	GetDivers(context.Context) ([]models.Diver, error)
 	GetDiver(context.Context, string) (models.Diver, error)
 	GetDiverReports(context.Context, string) ([]models.Report, error)
 	ExecuteDiverReport(context.Context, string, string) (models.Report, error)
@@ -22,11 +21,6 @@ func New() *Service {
 	return &Service{
 		storage: storage.New(),
 	}
-}
-
-func (s Service) DiverList(ctx context.Context) ([]models.Diver, error) {
-	return s.storage.GetDivers(ctx)
-
 }
 
 func (s Service) DiverReports(ctx context.Context, id string) ([]models.Report, error) {

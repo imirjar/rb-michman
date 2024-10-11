@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-chi/chi"
 	"github.com/imirjar/Michman/internal/michman/models"
 )
 
@@ -20,7 +21,7 @@ func (a *App) Ping() http.HandlerFunc {
 
 func (a *App) DiversList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		divers, err := a.Service.DiverList(r.Context())
+		divers, err := a.GrazerService.DiverList(r.Context())
 		if err != nil {
 			log.Print(err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -36,14 +37,9 @@ func (a *App) DiversList() http.HandlerFunc {
 
 func (a *App) ReportsList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var diver models.Diver
-		err := json.NewDecoder(r.Body).Decode(&diver)
-		if err != nil {
-			log.Print(err)
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		reports, err := a.Service.DiverReports(r.Context(), diver.Id)
+		diverID := chi.URLParam(r, "id")
+
+		reports, err := a.ReportService.DiverReports(r.Context(), diverID)
 		if err != nil {
 			log.Print(err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -67,7 +63,7 @@ func (a *App) ReportExecute() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		data, err := a.Service.GetDiverReportData(r.Context(), diver)
+		data, err := a.ReportService.GetDiverReportData(r.Context(), diver)
 		if err != nil {
 			log.Print(err)
 			http.Error(w, err.Error(), http.StatusBadRequest)

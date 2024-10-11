@@ -16,7 +16,7 @@ type API struct {
 	ContentType string
 }
 
-func NewAPI() *API {
+func New() *API {
 	api := API{
 		Client: http.Client{
 			Timeout: 3 * time.Second,
