@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/imirjar/Michman/internal/michman/models"
-	"github.com/imirjar/Michman/internal/michman/storage"
+	"github.com/imirjar/Michman/internal/michman/storage/collector"
 )
 
 type Storage interface {
@@ -20,7 +20,7 @@ type Service struct {
 
 func New() *Service {
 	return &Service{
-		storage: storage.New(),
+		storage: collector.New(),
 	}
 }
 

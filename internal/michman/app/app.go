@@ -63,6 +63,7 @@ func (a *App) Run(ctx context.Context) error {
 
 	// Get available divers
 	router.Get("/divers", a.DiversList())
+
 	router.Route("/diver/{id}", func(diver chi.Router) {
 		diver.Get("/", a.ReportsList())
 		diver.Post("/execute/{reportId}", a.ReportExecute())

@@ -4,27 +4,32 @@ import (
 	"context"
 
 	"github.com/imirjar/Michman/internal/michman/models"
-	"github.com/imirjar/Michman/internal/michman/storage"
+	"github.com/imirjar/Michman/internal/michman/storage/diver"
 )
 
-type Storage interface {
-	GetDiver(context.Context, string) (models.Diver, error)
+type Storager interface {
+	// GetDiver(context.Context, string) (models.Diver, error)
 	GetDiverReports(context.Context, string) ([]models.Report, error)
 	ExecuteDiverReport(context.Context, string, string) (models.Report, error)
 }
 
+type MemStorager interface {
+	GetDiver(context.Context, string) (models.Diver, error)
+}
+
 type Service struct {
-	storage Storage
+	storage    Storager
+	memStorage MemStorager
 }
 
 func New() *Service {
 	return &Service{
-		storage: storage.New(),
+		storage: diver.New(),
 	}
 }
 
 func (s Service) DiverReports(ctx context.Context, id string) ([]models.Report, error) {
-	diver, err := s.storage.GetDiver(ctx, id)
+	diver, err := s.memStorage.GetDiver(ctx, id)
 	if err != nil {
 		return nil, err
 	}
