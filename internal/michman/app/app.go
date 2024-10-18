@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -11,9 +10,6 @@ import (
 	"github.com/imirjar/Michman/internal/michman/models"
 	"github.com/imirjar/Michman/internal/michman/service/grazer"
 	"github.com/imirjar/Michman/internal/michman/service/reporter"
-	"github.com/imirjar/rb-glue/middlewares/authentication"
-	"github.com/imirjar/rb-glue/middlewares/contype"
-	"github.com/imirjar/rb-glue/middlewares/logger"
 )
 
 type Reporter interface {
@@ -51,15 +47,15 @@ func New() *App {
 func (a *App) Run(ctx context.Context) error {
 	router := chi.NewRouter()
 
-	authpath := fmt.Sprintf(a.config.GetAuthAddr() + "/token/validate")
+	// authpath := fmt.Sprintf(a.config.GetAuthAddr() + "/token/validate")
 
 	// Middlewares
-	router.Use(authentication.Authenticate(authpath, authentication.UserParams{}))
-	router.Use(logger.Logger())
-	router.Use(contype.CheckType("application/json"))
+	// router.Use(authentication.Authenticate(authpath, authentication.UserParams{}))
+	// router.Use(logger.Logger())
+	// router.Use(contype.CheckType("application/json"))
 
 	// Check connection
-	router.Get("/", a.Ping())
+	router.Get("/", a.Info())
 
 	// Get available divers
 	router.Get("/divers", a.DiversList())
@@ -69,7 +65,7 @@ func (a *App) Run(ctx context.Context) error {
 		diver.Post("/execute/{reportId}", a.ReportExecute())
 	})
 
-	router.Post("/connect", a.ReportsList())
+	router.Post("/connect", a.Connect())
 
 	srv := &http.Server{
 		Addr:    a.config.GetMichmanAddr(),

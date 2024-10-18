@@ -10,12 +10,11 @@ import (
 )
 
 // must check whitch of the divers the user have access
-func (a *App) Ping() http.HandlerFunc {
+func (a *App) Info() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Print("VSYO OK")
+		text := `Hi! My name is Michman and I can manage all of your databases in a single API.`
 		w.WriteHeader(http.StatusOK)
-
-		w.Write([]byte("I am Michman"))
+		w.Write([]byte(text))
 	}
 }
 
@@ -75,5 +74,16 @@ func (a *App) ReportExecute() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+	}
+}
+
+func (a *App) Connect() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Print("connect")
+		// diver := models.Diver{}
+
+		// json.Unmarshal(r.Body, &diver)
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("connected"))
 	}
 }

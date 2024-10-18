@@ -26,7 +26,6 @@ func New() *Service {
 
 func (s Service) DiverList(ctx context.Context) ([]models.Diver, error) {
 	return s.storage.GetDivers(ctx)
-
 }
 
 func (s Service) LoadConnections() {} // read all connected divers, ping it, connect which is still alive
