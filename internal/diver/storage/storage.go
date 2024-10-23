@@ -27,7 +27,7 @@ type Storage struct {
 }
 
 func NewStorage() *Storage {
-	var config Config = config.NewConfig()
+	var config Config = config.New()
 	return &Storage{
 		ReportsStore: reports.NewReportStore(),
 		Target:       target.NewTargetDB(config.GetDiverTargetDB()),

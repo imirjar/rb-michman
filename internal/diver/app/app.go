@@ -28,7 +28,7 @@ type Config interface {
 
 func NewApp() *App {
 	return &App{
-		config:  config.NewConfig(),
+		config:  config.New(),
 		service: service.NewService(),
 	}
 }

@@ -2,76 +2,49 @@ package app
 
 import (
 	"context"
-	"log"
-	"net/http"
 
-	"github.com/go-chi/chi"
 	"github.com/imirjar/Michman/config"
-	"github.com/imirjar/Michman/internal/michman/models"
+	"github.com/imirjar/Michman/internal/michman/gateway/http"
 	"github.com/imirjar/Michman/internal/michman/service/grazer"
 	"github.com/imirjar/Michman/internal/michman/service/reporter"
+	"github.com/imirjar/Michman/internal/michman/storage/api"
+	"github.com/imirjar/Michman/internal/michman/storage/memory"
 )
 
-type Reporter interface {
-	DiverReports(context.Context, string) ([]models.Report, error)
-	GetDiverReportData(ctx context.Context, ex models.Diver) (models.Report, error)
-}
+func Run(ctx context.Context) error {
+	// Подгружаем файл конфигураций /config
+	cfg := config.New()
 
-type Grazer interface {
-	LoadConnections()   // read all connected divers, ping it, connect which is still alive
-	BackupConnections() // backup all connected divers connection info
-	DiverList(context.Context) ([]models.Diver, error)
-}
+	// Приложение состоит из 3 основных слоев
+	// 1)rpc - Шлюз через который приложений обрабатывает входящие запросы
+	// 2)service - Сервис для логики обработки запросов
+	// 3)storage - Хранилище значений
+	// Слои представляют собой цепочку последовательностей
+	apiStore := api.New()
+	memStore := memory.New()
 
-type App struct {
-	config        Config
-	ReportService Reporter
-	GrazerService Grazer
-}
+	grazer := grazer.New()
+	reporter := reporter.New()
 
-type Config interface {
-	GetAuthAddr() string
-	GetMichmanAddr() string //allow req only for this addr
-	GetSecret() string
-}
+	srv := http.New()
 
-func New() *App {
+	// Соединяем srv->service->storage
+	// Так данные и будут двигаться
+	grazer.Storage = memStore
 
-	return &App{
-		config:        config.NewConfig(),
-		ReportService: reporter.New(),
-		GrazerService: grazer.New(),
-	}
-}
+	reporter.DiverStore = apiStore
+	reporter.DiverStore = apiStore
 
-func (a *App) Run(ctx context.Context) error {
-	router := chi.NewRouter()
+	srv.GrazerService = grazer
+	srv.ReportService = reporter
 
-	// authpath := fmt.Sprintf(a.config.GetAuthAddr() + "/token/validate")
+	done := make(chan bool)
 
-	// Middlewares
-	// router.Use(authentication.Authenticate(authpath, authentication.UserParams{}))
-	// router.Use(logger.Logger())
-	// router.Use(contype.CheckType("application/json"))
-
-	// Check connection
-	router.Get("/", a.Info())
-
-	// Get available divers
-	router.Get("/divers", a.DiversList())
-
-	router.Route("/diver/{id}", func(diver chi.Router) {
-		diver.Get("/", a.ReportsList())
-		diver.Post("/execute/{reportId}", a.ReportExecute())
-	})
-
-	router.Post("/connect", a.Connect())
-
-	srv := &http.Server{
-		Addr:    a.config.GetMichmanAddr(),
-		Handler: router,
-	}
-
-	log.Printf("Run app on PORT %s", a.config.GetMichmanAddr())
-	return srv.ListenAndServe()
+	//Запускаем сервер
+	go func() {
+		srv.Start(ctx, cfg.GetMichmanAddr())
+		done <- true
+	}()
+	<-done // Ожидание завершения первой горутины
+	return nil
 }

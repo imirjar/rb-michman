@@ -1,4 +1,4 @@
-package diver
+package api
 
 import (
 	"bytes"

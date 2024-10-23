@@ -1,4 +1,4 @@
-package app
+package http
 
 import (
 	"encoding/json"
@@ -18,7 +18,7 @@ func (a *App) Info() http.HandlerFunc {
 	}
 }
 
-func (a *App) DiversList() http.HandlerFunc {
+func (a *App) Grazer() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		divers, err := a.GrazerService.DiverList(r.Context())
 		if err != nil {
@@ -80,9 +80,23 @@ func (a *App) ReportExecute() http.HandlerFunc {
 func (a *App) Connect() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Print("connect")
-		// diver := models.Diver{}
+		log.Print(r.Host)
 
-		// json.Unmarshal(r.Body, &diver)
+		var diver models.Diver
+		err := json.NewDecoder(r.Body).Decode(&diver)
+		if err != nil {
+			log.Print(err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		err = a.GrazerService.ConnectDiver(r.Context(), diver)
+		if err != nil {
+			log.Print(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("connected"))
 	}

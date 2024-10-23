@@ -1,4 +1,4 @@
-package collector
+package memory
 
 import (
 	"context"
@@ -34,6 +34,7 @@ func (s *Storage) GetDivers(ctx context.Context) ([]models.Diver, error) {
 	return s.divers, nil
 }
 
-func (s *Storage) AddDiver([]models.Diver) error {
+func (s *Storage) AddDiver(ctx context.Context, diver models.Diver) error {
+	s.divers = append(s.divers, diver)
 	return nil
 }
