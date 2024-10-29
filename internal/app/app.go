@@ -3,12 +3,12 @@ package app
 import (
 	"context"
 
-	"github.com/imirjar/Michman/config"
-	"github.com/imirjar/Michman/internal/michman/gateway/http"
-	"github.com/imirjar/Michman/internal/michman/service/grazer"
-	"github.com/imirjar/Michman/internal/michman/service/reporter"
-	"github.com/imirjar/Michman/internal/michman/storage/api"
-	"github.com/imirjar/Michman/internal/michman/storage/memory"
+	"github.com/imirjar/rb-michman/config"
+	"github.com/imirjar/rb-michman/internal/gateway/http"
+	"github.com/imirjar/rb-michman/internal/service/grazer"
+	"github.com/imirjar/rb-michman/internal/service/reporter"
+	"github.com/imirjar/rb-michman/internal/storage/collector"
+	"github.com/imirjar/rb-michman/internal/storage/diver"
 )
 
 func Run(ctx context.Context) error {
@@ -20,8 +20,8 @@ func Run(ctx context.Context) error {
 	// 2)service - Сервис для логики обработки запросов
 	// 3)storage - Хранилище значений
 	// Слои представляют собой цепочку последовательностей
-	apiStore := api.New()
-	memStore := memory.New()
+	apiStore := diver.New()
+	memStore := collector.New()
 
 	grazer := grazer.New()
 	reporter := reporter.New()
@@ -30,10 +30,11 @@ func Run(ctx context.Context) error {
 
 	// Соединяем srv->service->storage
 	// Так данные и будут двигаться
-	grazer.Storage = memStore
+	grazer.Collector = memStore
+	grazer.Divers = apiStore
 
-	reporter.DiverStore = apiStore
-	reporter.DiverStore = apiStore
+	reporter.Divers = apiStore
+	reporter.Collector = memStore
 
 	srv.GrazerService = grazer
 	srv.ReportService = reporter
@@ -45,6 +46,7 @@ func Run(ctx context.Context) error {
 		srv.Start(ctx, cfg.GetMichmanAddr())
 		done <- true
 	}()
+
 	<-done // Ожидание завершения первой горутины
 	return nil
 }

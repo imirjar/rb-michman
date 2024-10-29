@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/imirjar/Michman/internal/michman/app"
+	"github.com/imirjar/rb-michman/internal/app"
 )
 
 func main() {

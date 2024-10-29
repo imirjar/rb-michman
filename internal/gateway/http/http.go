@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/imirjar/Michman/internal/michman/models"
+	"github.com/imirjar/rb-michman/internal/models"
 )
 
 type Reporter interface {
@@ -16,9 +16,8 @@ type Reporter interface {
 
 type Grazer interface {
 	ConnectDiver(context.Context, models.Diver) error
-	LoadConnections()   // read all connected divers, ping it, connect which is still alive
-	BackupConnections() // backup all connected divers connection info
-	DiverList(context.Context) ([]models.Diver, error)
+	CheckConnections(context.Context) error // read all connected divers, ping it, connect which is still alive
+	DiverList(context.Context) (map[string]models.Diver, error)
 }
 
 type App struct {
@@ -45,11 +44,11 @@ func (a *App) Start(ctx context.Context, addr string) error {
 	router.Get("/", a.Info())
 
 	// Get available divers
-	router.Get("/divers", a.Grazer())
+	router.Get("/divers", a.DiversList())
 
 	router.Route("/diver/{id}", func(diver chi.Router) {
-		diver.Get("/", a.ReportsList())
-		diver.Post("/execute/{reportId}", a.ReportExecute())
+		diver.Get("/", a.DiverReportsList())
+		diver.Post("/execute/{reportId}", a.DiverReportExecute())
 	})
 
 	router.Post("/connect", a.Connect())

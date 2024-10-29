@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/imirjar/Michman/internal/michman/models"
+	"github.com/imirjar/rb-michman/internal/models"
 )
 
 // must check whitch of the divers the user have access
@@ -18,7 +18,7 @@ func (a *App) Info() http.HandlerFunc {
 	}
 }
 
-func (a *App) Grazer() http.HandlerFunc {
+func (a *App) DiversList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		divers, err := a.GrazerService.DiverList(r.Context())
 		if err != nil {
@@ -34,11 +34,11 @@ func (a *App) Grazer() http.HandlerFunc {
 	}
 }
 
-func (a *App) ReportsList() http.HandlerFunc {
+func (a *App) DiverReportsList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		diverID := chi.URLParam(r, "id")
+		hash := chi.URLParam(r, "id")
 
-		reports, err := a.ReportService.DiverReports(r.Context(), diverID)
+		reports, err := a.ReportService.DiverReports(r.Context(), hash)
 		if err != nil {
 			log.Print(err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -53,7 +53,7 @@ func (a *App) ReportsList() http.HandlerFunc {
 	}
 }
 
-func (a *App) ReportExecute() http.HandlerFunc {
+func (a *App) DiverReportExecute() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var diver models.Diver
 		err := json.NewDecoder(r.Body).Decode(&diver)
@@ -77,20 +77,22 @@ func (a *App) ReportExecute() http.HandlerFunc {
 	}
 }
 
+// Is used for connecting runing divers into Michman grazer
 func (a *App) Connect() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Print("connect")
-		log.Print(r.Host)
 
 		var diver models.Diver
-		err := json.NewDecoder(r.Body).Decode(&diver)
-		if err != nil {
-			log.Print(err)
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
+		diver.Addr = "127.0.0.1:8080"
+		diver.Name = "diver"
+		// err := json.NewDecoder(r.Body).Decode(&diver)
+		// if err != nil {
+		// 	log.Print(err)
+		// 	http.Error(w, err.Error(), http.StatusBadRequest)
+		// 	return
+		// }
 
-		err = a.GrazerService.ConnectDiver(r.Context(), diver)
+		err := a.GrazerService.ConnectDiver(r.Context(), diver)
 		if err != nil {
 			log.Print(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)

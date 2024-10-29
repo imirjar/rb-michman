@@ -1,11 +1,5 @@
 package models
 
-type Diver struct {
-	Name    string   `json:"name"`
-	Addr    string   `json:"addr"`
-	Reports []Report `json:"reports,omitempty"`
-}
-
 type Report struct {
 	Id   string `json:"id"`
 	Name string `json:"name,omitempty"`
@@ -15,4 +9,12 @@ type Report struct {
 type Target struct {
 	DiverId  string `json:"diver_id"`
 	ReportId string `json:"report_id"`
+}
+
+type Diver struct {
+	ID        string   `json:"id"`
+	Name      string   `json:"name"`
+	Addr      string   `json:"addr"`
+	Reports   []Report `json:"reports,omitempty"`
+	Connected bool
 }
