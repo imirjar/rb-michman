@@ -23,7 +23,7 @@ type Storage struct {
 	API
 }
 
-func NewStorage() *Storage {
+func New() *Storage {
 	return &Storage{
 		DB:  database.NewStorage(),
 		API: api.NewAPI(),

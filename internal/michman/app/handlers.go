@@ -9,12 +9,16 @@ import (
 )
 
 // must check whitch of the divers the user have access
-func (a *App) Hello(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("I am Michman"))
+func (a *App) Ping() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Print("VSYO OK")
+		w.WriteHeader(http.StatusOK)
+
+		w.Write([]byte("I am Michman"))
+	}
 }
 
-func (a *App) DiversListHandler() http.HandlerFunc {
+func (a *App) DiversList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		divers, err := a.Service.DiverList(r.Context())
 		if err != nil {
@@ -30,7 +34,7 @@ func (a *App) DiversListHandler() http.HandlerFunc {
 	}
 }
 
-func (a *App) DiverReportsHandler() http.HandlerFunc {
+func (a *App) ReportsList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var diver models.Diver
 		err := json.NewDecoder(r.Body).Decode(&diver)
@@ -54,7 +58,7 @@ func (a *App) DiverReportsHandler() http.HandlerFunc {
 	}
 }
 
-func (a *App) DiverExecuteReportHandler() http.HandlerFunc {
+func (a *App) ReportExecute() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var diver models.Diver
 		err := json.NewDecoder(r.Body).Decode(&diver)

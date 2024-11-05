@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/caarlos0/env/v10"
@@ -31,7 +32,7 @@ func NewConfig() *Config {
 }
 
 func (c *Config) GetAuthAddr() string {
-	return c.Auth
+	return fmt.Sprintf("http://" + c.Auth)
 }
 
 func (c *Config) GetDiverAddr() string {
