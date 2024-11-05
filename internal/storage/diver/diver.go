@@ -1,14 +1,15 @@
-package api
+package diver
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"time"
 
-	"github.com/imirjar/Michman/internal/michman/models"
+	"github.com/imirjar/rb-michman/internal/models"
 )
 
 type API struct {
@@ -16,7 +17,7 @@ type API struct {
 	ContentType string
 }
 
-func NewAPI() *API {
+func New() *API {
 	api := API{
 		Client: http.Client{
 			Timeout: 3 * time.Second,
@@ -28,7 +29,8 @@ func NewAPI() *API {
 
 func (api API) GetDiverReports(ctx context.Context, path string) ([]models.Report, error) {
 	var reports []models.Report
-	response, err := api.Client.Post(path+"/reports/list/", api.ContentType, nil)
+	log.Print(path)
+	response, err := api.Client.Get("http://" + path + "/reports/")
 	if err != nil {
 		return nil, err
 	}
@@ -70,4 +72,8 @@ func (api API) ExecuteDiverReport(ctx context.Context, addr, repId string) (mode
 		return report, err
 	}
 	return report, nil
+}
+
+func (api API) CheckConnection(ctx context.Context, dvr models.Diver) bool {
+	return true
 }

@@ -16,7 +16,7 @@ type Config struct {
 	DiverTargetDB string `env:"TARGET_DB_CONN"`
 }
 
-func NewConfig() *Config {
+func New() *Config {
 	err := godotenv.Load() // 👈 load .env file
 	if err != nil {
 		log.Fatal(err)
