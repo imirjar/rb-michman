@@ -47,17 +47,15 @@ func (api API) GetDiverReports(ctx context.Context, path string) ([]models.Repor
 	return reports, nil
 }
 
-func (api API) ExecuteDiverReport(ctx context.Context, addr, repId string) (models.Report, error) {
-	var report = models.Report{
-		Id: repId,
-	}
+func (api API) ExecuteDiverReport(ctx context.Context, addr, repId string) ([]map[string]interface{}, error) {
+	var report []map[string]interface{}
 	var buf bytes.Buffer
 	err := json.NewEncoder(&buf).Encode(report)
 	if err != nil {
 		return report, err
 	}
 
-	response, err := api.Client.Post(addr+"/reports/execute/", api.ContentType, &buf)
+	response, err := api.Client.Get("http://" + addr + "/reports/generate/" + repId)
 	if err != nil {
 		return report, err
 	}

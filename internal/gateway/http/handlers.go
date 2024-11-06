@@ -55,14 +55,18 @@ func (a *App) DiverReportsList() http.HandlerFunc {
 
 func (a *App) DiverReportExecute() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var diver models.Diver
-		err := json.NewDecoder(r.Body).Decode(&diver)
+
+		hash := chi.URLParam(r, "id")
+		repID := chi.URLParam(r, "reportId")
+
+		diverAddr, err := a.GrazerService.DiverAddr(r.Context(), hash)
 		if err != nil {
 			log.Print(err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		data, err := a.ReportService.GetDiverReportData(r.Context(), diver)
+
+		data, err := a.ReportService.GetDiverReportData(r.Context(), diverAddr, repID)
 		if err != nil {
 			log.Print(err)
 			http.Error(w, err.Error(), http.StatusBadRequest)

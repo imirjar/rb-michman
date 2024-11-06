@@ -12,6 +12,7 @@ import (
 
 type Collector interface {
 	GetDivers(context.Context) (map[string]models.Diver, error)
+	GetDiver(context.Context, string) (*models.Diver, error)
 	AddDiver(context.Context, string, models.Diver) error
 }
 
@@ -33,6 +34,15 @@ func New() *Service {
 
 func (s Service) DiverList(ctx context.Context) (map[string]models.Diver, error) {
 	return s.Collector.GetDivers(ctx)
+}
+
+func (s Service) DiverAddr(ctx context.Context, hash string) (string, error) {
+	diver, err := s.Collector.GetDiver(ctx, hash)
+	if err != nil {
+		log.Print(err)
+		return "", err
+	}
+	return diver.Addr, nil
 }
 
 func (s Service) CheckConnections(ctx context.Context) error {

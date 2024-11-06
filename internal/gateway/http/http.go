@@ -11,13 +11,14 @@ import (
 
 type Reporter interface {
 	DiverReports(context.Context, string) ([]models.Report, error)
-	GetDiverReportData(ctx context.Context, ex models.Diver) (models.Report, error)
+	GetDiverReportData(ctx context.Context, addr, repID string) ([]map[string]interface{}, error)
 }
 
 type Grazer interface {
 	ConnectDiver(context.Context, models.Diver) error
 	CheckConnections(context.Context) error // read all connected divers, ping it, connect which is still alive
 	DiverList(context.Context) (map[string]models.Diver, error)
+	DiverAddr(ctx context.Context, hash string) (string, error)
 }
 
 type App struct {

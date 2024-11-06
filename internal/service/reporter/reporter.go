@@ -10,7 +10,7 @@ import (
 type IDiver interface {
 	// GetDiver(context.Context, string) (models.Diver, error)
 	GetDiverReports(context.Context, string) ([]models.Report, error)
-	ExecuteDiverReport(context.Context, string, string) (models.Report, error)
+	ExecuteDiverReport(context.Context, string, string) ([]map[string]interface{}, error)
 }
 
 type Collector interface {
@@ -35,6 +35,6 @@ func (s Service) DiverReports(ctx context.Context, hash string) ([]models.Report
 	return s.Divers.GetDiverReports(ctx, report.Addr)
 }
 
-func (s Service) GetDiverReportData(ctx context.Context, diver models.Diver) (models.Report, error) {
-	return s.Divers.ExecuteDiverReport(ctx, diver.Addr, diver.Reports[0].Id)
+func (s Service) GetDiverReportData(ctx context.Context, addr, repID string) ([]map[string]interface{}, error) {
+	return s.Divers.ExecuteDiverReport(ctx, addr, repID)
 }
