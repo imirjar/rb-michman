@@ -54,8 +54,9 @@ func (a *App) Start(ctx context.Context, addr string) error {
 
 	router.Post("/connect", a.Connect())
 
+	log.Println(addr)
 	srv := &http.Server{
-		Addr:    addr,
+		Addr:    ":" + addr,
 		Handler: router,
 	}
 

@@ -1,52 +1,45 @@
 package config
 
 import (
-	"fmt"
 	"log"
+	"os"
 
 	"github.com/caarlos0/env/v10"
-	"github.com/joho/godotenv"
+	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
-	Auth          string `env:"AUTH_ADDR"`
-	Diver         string `env:"DIVER_ADDR"`
-	Michman       string `env:"MICHMAN_ADDR"`
-	Secret        string `env:"SECRET"`
-	DiverTargetDB string `env:"TARGET_DB_CONN"`
+	Port string `yml:"port" env:"PORT"`
+	Auth string `yaml:"auth" env:"AUTH"`
 }
 
 func New() *Config {
-	err := godotenv.Load() // 👈 load .env file
+	cfg := Config{}
+	cfg.readFile()
+	cfg.readEnv()
+	return &cfg
+}
+
+func (cfg *Config) readFile() {
+	f, err := os.Open("config/config.yml")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("error while reading file: %s", err)
 	}
+	defer f.Close()
 
-	conf := Config{}
-
-	if err := env.Parse(&conf); err != nil {
-		panic(err)
+	decoder := yaml.NewDecoder(f)
+	err = decoder.Decode(cfg)
+	if err != nil {
+		log.Fatalf("error while decoding: %s", err)
 	}
-	// fmt.Printf("%+v\n", conf)
-	return &conf
 }
 
-func (c *Config) GetAuthAddr() string {
-	return fmt.Sprintf("http://" + c.Auth)
-}
-
-func (c *Config) GetDiverAddr() string {
-	return c.Diver
-}
-
-func (c *Config) GetMichmanAddr() string {
-	return c.Michman
-}
-
-func (c *Config) GetSecret() string {
-	return c.Secret
-}
-
-func (c *Config) GetDiverTargetDB() string {
-	return c.DiverTargetDB
+func (cfg *Config) readEnv() {
+	c := cfg.Port
+	if err := env.Parse(cfg); err != nil {
+		log.Printf("%+v\n", err)
+	}
+	if c != cfg.Port {
+		log.Printf("Было: %s, Стало: %s", c, cfg.Port)
+	}
 }

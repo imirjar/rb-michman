@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"log"
 
 	"github.com/imirjar/rb-michman/config"
 	"github.com/imirjar/rb-michman/internal/gateway/http"
@@ -43,10 +44,13 @@ func Run(ctx context.Context) error {
 
 	//Запускаем сервер
 	go func() {
-		srv.Start(ctx, cfg.GetMichmanAddr())
-		done <- true
+		if err := srv.Start(ctx, cfg.Port); err != nil {
+			log.Print(err)
+			done <- true
+		}
 	}()
 
 	<-done // Ожидание завершения первой горутины
+	log.Print("shutdown")
 	return nil
 }

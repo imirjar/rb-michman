@@ -84,17 +84,10 @@ func (a *App) DiverReportExecute() http.HandlerFunc {
 // Is used for connecting runing divers into Michman grazer
 func (a *App) Connect() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Print("connect")
 
 		var diver models.Diver
 		diver.Addr = "127.0.0.1:8080"
 		diver.Name = "diver"
-		// err := json.NewDecoder(r.Body).Decode(&diver)
-		// if err != nil {
-		// 	log.Print(err)
-		// 	http.Error(w, err.Error(), http.StatusBadRequest)
-		// 	return
-		// }
 
 		err := a.GrazerService.ConnectDiver(r.Context(), diver)
 		if err != nil {
