@@ -86,8 +86,12 @@ func (a *App) Connect() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		var diver models.Diver
-		diver.Addr = "127.0.0.1:8080"
-		diver.Name = "diver"
+
+		if err := json.NewDecoder(r.Body).Decode(&diver); err != nil {
+			http.Error(w, "Неверный формат JSON", http.StatusBadRequest)
+			log.Printf("Ошибка декодирования JSON: %v", err)
+			return
+		}
 
 		err := a.GrazerService.ConnectDiver(r.Context(), diver)
 		if err != nil {
