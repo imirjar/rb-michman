@@ -93,6 +93,8 @@ func (a *App) Connect() http.HandlerFunc {
 			return
 		}
 
+		log.Println("DIVER->", diver)
+
 		err := a.GrazerService.ConnectDiver(r.Context(), diver)
 		if err != nil {
 			log.Print(err)
