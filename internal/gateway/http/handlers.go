@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -13,12 +14,29 @@ import (
 func (a *App) Info() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		text := `Hi! My name is Michman and I can manage all of your databases in a single API.`
+
+		divers, err := a.GrazerService.DiverList(r.Context())
+		if err != nil {
+			log.Print(err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if len(divers) > 0 {
+			text += `<table style="border-style: solid;"><tr><th>name</th><th>addres</th></tr>`
+			for _, v := range divers {
+				text += fmt.Sprintf("<tr><td>%s</td><td>%s</td></tr>", v.Name, v.Addr)
+			}
+			text += "</table>"
+		}
+
+		w.Header().Add("content-Type", "text/html")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(text))
 	}
 }
 
-func (a *App) DiversList() http.HandlerFunc {
+func (a *App) GetDivers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		divers, err := a.GrazerService.DiverList(r.Context())
 		if err != nil {
@@ -34,7 +52,7 @@ func (a *App) DiversList() http.HandlerFunc {
 	}
 }
 
-func (a *App) DiverReportsList() http.HandlerFunc {
+func (a *App) GetDiverReports() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		hash := chi.URLParam(r, "id")
 
@@ -53,7 +71,7 @@ func (a *App) DiverReportsList() http.HandlerFunc {
 	}
 }
 
-func (a *App) DiverReportExecute() http.HandlerFunc {
+func (a *App) ExecuteDiverReport() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		hash := chi.URLParam(r, "id")
@@ -82,7 +100,7 @@ func (a *App) DiverReportExecute() http.HandlerFunc {
 }
 
 // Is used for connecting runing divers into Michman grazer
-func (a *App) Connect() http.HandlerFunc {
+func (a *App) ConnectDiver() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		var diver models.Diver

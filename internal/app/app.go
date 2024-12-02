@@ -6,10 +6,10 @@ import (
 
 	"github.com/imirjar/rb-michman/config"
 	"github.com/imirjar/rb-michman/internal/gateway/http"
+	diver1 "github.com/imirjar/rb-michman/internal/service/diver"
 	"github.com/imirjar/rb-michman/internal/service/grazer"
-	"github.com/imirjar/rb-michman/internal/service/reporter"
-	"github.com/imirjar/rb-michman/internal/storage/collector"
 	"github.com/imirjar/rb-michman/internal/storage/diver"
+	grazer1 "github.com/imirjar/rb-michman/internal/storage/grazer"
 )
 
 func Run(ctx context.Context) error {
@@ -22,10 +22,13 @@ func Run(ctx context.Context) error {
 	// 3)storage - Хранилище значений
 	// Слои представляют собой цепочку последовательностей
 	apiStore := diver.New()
-	memStore := collector.New()
+	memStore := grazer1.New()
 
+	// Collect information about current divers
 	grazer := grazer.New()
-	reporter := reporter.New()
+
+	// Current Divers API which are available
+	reporter := diver1.New()
 
 	srv := http.New()
 

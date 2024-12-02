@@ -9,7 +9,7 @@ import (
 	"github.com/imirjar/rb-michman/internal/models"
 )
 
-type Reporter interface {
+type Diver interface {
 	DiverReports(context.Context, string) ([]models.Report, error)
 	GetDiverReportData(ctx context.Context, addr, repID string) ([]map[string]interface{}, error)
 }
@@ -22,7 +22,7 @@ type Grazer interface {
 }
 
 type App struct {
-	ReportService Reporter
+	ReportService Diver
 	GrazerService Grazer
 }
 
@@ -45,14 +45,13 @@ func (a *App) Start(ctx context.Context, addr string) error {
 	router.Get("/", a.Info())
 
 	// Get available divers
-	router.Get("/divers", a.DiversList())
-
-	router.Route("/diver/{id}", func(diver chi.Router) {
-		diver.Get("/", a.DiverReportsList())
-		diver.Post("/execute/{reportId}", a.DiverReportExecute())
+	router.Route("/divers", func(diver chi.Router) {
+		diver.Get("/", a.GetDivers())
+		diver.Get("/{id}", a.GetDiverReports())
+		diver.Post("/{id}/{reportId}", a.ExecuteDiverReport())
 	})
 
-	router.Post("/connect", a.Connect())
+	router.Post("/connect", a.ConnectDiver())
 
 	log.Println(addr)
 	srv := &http.Server{
