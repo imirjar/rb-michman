@@ -17,3 +17,8 @@ type Diver struct {
 	Reports   []Report `json:"reports,omitempty"`
 	Connected bool
 }
+
+type Data struct {
+	Columns []string `json:"columns"`
+	Values  [][]any  `json:"values"`
+}

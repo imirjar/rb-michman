@@ -47,8 +47,8 @@ func (api API) GetDiverReports(ctx context.Context, path string) ([]models.Repor
 	return reports, nil
 }
 
-func (api API) ExecuteDiverReport(ctx context.Context, addr, repId string) ([]map[string]interface{}, error) {
-	var report []map[string]interface{}
+func (api API) ExecuteDiverReport(ctx context.Context, addr, repId string) (models.Data, error) {
+	report := models.Data{}
 	var buf bytes.Buffer
 	err := json.NewEncoder(&buf).Encode(report)
 	if err != nil {

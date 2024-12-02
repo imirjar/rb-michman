@@ -11,7 +11,7 @@ import (
 
 type Diver interface {
 	DiverReports(context.Context, string) ([]models.Report, error)
-	GetDiverReportData(ctx context.Context, addr, repID string) ([]map[string]interface{}, error)
+	GetDiverReportData(ctx context.Context, addr, repID string) (models.Data, error)
 }
 
 type Grazer interface {
