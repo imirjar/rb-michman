@@ -84,18 +84,35 @@ func (a *App) ExecuteDiverReport() http.HandlerFunc {
 			return
 		}
 
-		data, err := a.ReportService.GetDiverReportData(r.Context(), diverAddr, repID)
-		if err != nil {
-			log.Print(err)
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+		query := r.FormValue("format")
+		if query == "json" {
+			data, err := a.ReportService.GetDiverReportDataMap(r.Context(), diverAddr, repID)
+			if err != nil {
+				log.Print(err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			if err := json.NewEncoder(w).Encode(data); err != nil {
+				log.Print(err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+		} else {
+			data, err := a.ReportService.GetDiverReportData(r.Context(), diverAddr, repID)
+			if err != nil {
+				log.Print(err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			if err := json.NewEncoder(w).Encode(data); err != nil {
+				log.Print(err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
 		}
-		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(data); err != nil {
-			log.Print(err)
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
+
 	}
 }
 

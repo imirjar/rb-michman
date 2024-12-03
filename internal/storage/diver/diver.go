@@ -72,6 +72,31 @@ func (api API) ExecuteDiverReport(ctx context.Context, addr, repId string) (mode
 	return report, nil
 }
 
+func (api API) ExecuteDiverReportMap(ctx context.Context, addr, repId string) ([]map[string]interface{}, error) {
+	var report []map[string]interface{}
+	var buf bytes.Buffer
+	err := json.NewEncoder(&buf).Encode(report)
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := api.Client.Get("http://" + addr + "/reports/generate/" + repId)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode >= 300 {
+		return nil, errors.New(response.Status)
+	}
+
+	err = json.NewDecoder(response.Body).Decode(&report)
+	if err != nil {
+		return nil, err
+	}
+	return report, nil
+}
+
 func (api API) CheckConnection(ctx context.Context, dvr models.Diver) bool {
 	return true
 }
