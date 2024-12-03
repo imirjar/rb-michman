@@ -80,7 +80,7 @@ func (api API) ExecuteDiverReportMap(ctx context.Context, addr, repId string) ([
 		return nil, err
 	}
 
-	response, err := api.Client.Get("http://" + addr + "/reports/generate/" + repId)
+	response, err := api.Client.Get("http://" + addr + "/reports/generate/" + repId + "?format=json")
 	if err != nil {
 		return nil, err
 	}
