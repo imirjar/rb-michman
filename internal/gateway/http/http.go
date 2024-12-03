@@ -48,7 +48,7 @@ func (a *App) Start(ctx context.Context, addr string) error {
 	router.Route("/divers", func(diver chi.Router) {
 		diver.Get("/", a.GetDivers())
 		diver.Get("/{id}", a.GetDiverReports())
-		diver.Post("/{id}/{reportId}", a.ExecuteDiverReport())
+		diver.Get("/{id}/{reportId}", a.ExecuteDiverReport())
 	})
 
 	router.Post("/connect", a.ConnectDiver())
