@@ -8,4 +8,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 )
 
-require gopkg.in/yaml.v2 v2.4.0 // indirect
+require (
+	github.com/go-chi/cors v1.2.1 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
+)
