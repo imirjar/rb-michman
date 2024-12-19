@@ -1,0 +1,2 @@
+mockgen -destination=internal/mock/diver.go -package=mock github.com/imirjar/rb-michman/internal/gateway/http Diver
+mockgen -destination=internal/mock/grazer.go -package=mock github.com/imirjar/rb-michman/internal/gateway/http Grazer

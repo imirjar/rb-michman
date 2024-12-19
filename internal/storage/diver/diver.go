@@ -96,7 +96,3 @@ func (api API) ExecuteDiverReportMap(ctx context.Context, addr, repId string) ([
 	}
 	return report, nil
 }
-
-func (api API) CheckConnection(ctx context.Context, dvr models.Diver) bool {
-	return true
-}

@@ -11,10 +11,11 @@ type Storage struct {
 }
 
 func New() *Storage {
-	store := Storage{
+	store := &Storage{
 		divers: map[string]models.Diver{},
 	}
-	return &store
+
+	return store
 }
 
 func (s *Storage) GetDivers(ctx context.Context) (map[string]models.Diver, error) {

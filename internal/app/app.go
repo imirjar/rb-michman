@@ -34,14 +34,13 @@ func Run(ctx context.Context) error {
 
 	// Соединяем srv->service->storage
 	// Так данные и будут двигаться
-	grazer.Collector = memStore
-	grazer.Divers = apiStore
+	grazer.Grazer = memStore
 
 	reporter.Divers = apiStore
 	reporter.Collector = memStore
 
+	srv.DiverService = reporter
 	srv.GrazerService = grazer
-	srv.ReportService = reporter
 
 	done := make(chan bool)
 

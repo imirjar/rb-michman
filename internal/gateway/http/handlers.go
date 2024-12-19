@@ -10,7 +10,8 @@ import (
 	"github.com/imirjar/rb-michman/internal/models"
 )
 
-// must check whitch of the divers the user have access
+// Most information about the application
+// Also grant a information of connected divers
 func (a *App) Info() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		text := `Hi! My name is Michman and I can manage all of your databases in a single API.`
@@ -23,9 +24,15 @@ func (a *App) Info() http.HandlerFunc {
 		}
 
 		if len(divers) > 0 {
-			text += `<table style="border-style: solid;"><tr><th>name</th><th>addres</th></tr>`
+			text += `<table style="border-style: solid;"><tr><th>name</th><th>addres</th><th>status</th></tr>`
 			for _, v := range divers {
-				text += fmt.Sprintf("<tr><td>%s</td><td>%s</td></tr>", v.Name, v.Addr)
+				status := "<a>&#128993;</a>"
+				if v.CheckConn() {
+					status = "<a>&#128994;</a>"
+				} else {
+					status = "<a>&#128308;</a>"
+				}
+				text += fmt.Sprintf("<tr><td>%s</td><td>%s</td><td>%s</td></tr>", v.Name, v.Addr, status)
 			}
 			text += "</table>"
 		}
@@ -36,6 +43,7 @@ func (a *App) Info() http.HandlerFunc {
 	}
 }
 
+// Get all divers from inmemory storage
 func (a *App) GetDivers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		divers, err := a.GrazerService.DiverList(r.Context())
@@ -52,41 +60,46 @@ func (a *App) GetDivers() http.HandlerFunc {
 	}
 }
 
+// Connect to choosen diver and get the diver list
 func (a *App) GetDiverReports() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-type", "application/json")
 		hash := chi.URLParam(r, "id")
 
-		reports, err := a.ReportService.DiverReports(r.Context(), hash)
+		reports, err := a.DiverService.DiverReports(r.Context(), hash)
 		if err != nil {
-			log.Print(err)
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{"error": "internal server error"})
 			return
 		}
+
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(reports); err != nil {
-			log.Print(err)
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{"error": "internal server error"})
 			return
 		}
 	}
 }
 
+// Connect to choosen diver and execute choosen report. Then get it's data
 func (a *App) ExecuteDiverReport() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-type", "application/json")
 
 		hash := chi.URLParam(r, "id")
 		repID := chi.URLParam(r, "reportId")
 
 		diverAddr, err := a.GrazerService.DiverAddr(r.Context(), hash)
 		if err != nil {
-			log.Print(err)
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"error": "status bad request"})
 			return
 		}
 
 		query := r.FormValue("format")
 		if query == "json" {
-			data, err := a.ReportService.GetDiverReportDataMap(r.Context(), diverAddr, repID)
+			data, err := a.DiverService.GetDiverReportDataMap(r.Context(), diverAddr, repID)
 			if err != nil {
 				log.Print(err)
 				http.Error(w, err.Error(), http.StatusBadRequest)
@@ -99,16 +112,16 @@ func (a *App) ExecuteDiverReport() http.HandlerFunc {
 				return
 			}
 		} else {
-			data, err := a.ReportService.GetDiverReportData(r.Context(), diverAddr, repID)
+			data, err := a.DiverService.GetDiverReportData(r.Context(), diverAddr, repID)
 			if err != nil {
-				log.Print(err)
-				http.Error(w, err.Error(), http.StatusBadRequest)
+				w.WriteHeader(http.StatusBadRequest)
+				json.NewEncoder(w).Encode(map[string]string{"error": "status bad request"})
 				return
 			}
 			w.WriteHeader(http.StatusOK)
 			if err := json.NewEncoder(w).Encode(data); err != nil {
-				log.Print(err)
-				http.Error(w, err.Error(), http.StatusBadRequest)
+				w.WriteHeader(http.StatusBadRequest)
+				json.NewEncoder(w).Encode(map[string]string{"error": "status bad request"})
 				return
 			}
 		}
@@ -116,7 +129,7 @@ func (a *App) ExecuteDiverReport() http.HandlerFunc {
 	}
 }
 
-// Is used for connecting runing divers into Michman grazer
+// Is used for connecting runing divers into Michman inmemory storage
 func (a *App) ConnectDiver() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -140,4 +153,9 @@ func (a *App) ConnectDiver() http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("connected"))
 	}
+}
+
+func errorJSON(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusInternalServerError)
+	json.NewEncoder(w).Encode(map[string]string{"error": "internal server error"})
 }

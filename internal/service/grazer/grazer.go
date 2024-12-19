@@ -10,22 +10,17 @@ import (
 	"github.com/imirjar/rb-michman/internal/models"
 )
 
-type Collector interface {
+type Grazer interface {
 	GetDivers(context.Context) (map[string]models.Diver, error)
 	GetDiver(context.Context, string) (*models.Diver, error)
 	AddDiver(context.Context, string, models.Diver) error
-}
-
-type IDiver interface {
-	CheckConnection(context.Context, models.Diver) bool
 }
 
 // Grazer must know all about active divers
 // must backup information about existing divers when michan shutting down
 // must ping and being pinged by divers
 type Service struct {
-	Collector Collector
-	Divers    IDiver
+	Grazer Grazer
 }
 
 func New() *Service {
@@ -33,29 +28,17 @@ func New() *Service {
 }
 
 func (s Service) DiverList(ctx context.Context) (map[string]models.Diver, error) {
-	return s.Collector.GetDivers(ctx)
+	return s.Grazer.GetDivers(ctx)
 }
 
 func (s Service) DiverAddr(ctx context.Context, hash string) (string, error) {
-	diver, err := s.Collector.GetDiver(ctx, hash)
+	diver, err := s.Grazer.GetDiver(ctx, hash)
 	if err != nil {
 		log.Print(err)
 		return "", err
 	}
 	return diver.Addr, nil
 }
-
-func (s Service) CheckConnections(ctx context.Context) error {
-	divers, err := s.Collector.GetDivers(ctx)
-	if err != nil {
-		log.Print(err)
-		return err
-	}
-	for _, dvr := range divers {
-		dvr.Connected = s.Divers.CheckConnection(ctx, dvr)
-	}
-	return nil
-} // read all connected divers, ping it, connect which is still alive
 
 func (s Service) ConnectDiver(ctx context.Context, diver models.Diver) error {
 	bytes, err := json.Marshal(diver)
@@ -65,5 +48,5 @@ func (s Service) ConnectDiver(ctx context.Context, diver models.Diver) error {
 	}
 
 	hash := sha256.Sum256([]byte(bytes))
-	return s.Collector.AddDiver(ctx, hex.EncodeToString(hash[:]), diver)
+	return s.Grazer.AddDiver(ctx, hex.EncodeToString(hash[:]), diver)
 }

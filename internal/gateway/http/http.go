@@ -18,18 +18,16 @@ type Diver interface {
 
 type Grazer interface {
 	ConnectDiver(context.Context, models.Diver) error
-	CheckConnections(context.Context) error // read all connected divers, ping it, connect which is still alive
 	DiverList(context.Context) (map[string]models.Diver, error)
 	DiverAddr(ctx context.Context, hash string) (string, error)
 }
 
 type App struct {
-	ReportService Diver
+	DiverService  Diver
 	GrazerService Grazer
 }
 
 func New() *App {
-
 	return &App{}
 }
 
@@ -65,7 +63,6 @@ func (a *App) Start(ctx context.Context, addr string) error {
 
 	router.Post("/connect", a.ConnectDiver())
 
-	log.Println(addr)
 	srv := &http.Server{
 		Addr:    ":" + addr,
 		Handler: router,
