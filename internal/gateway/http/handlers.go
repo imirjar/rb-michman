@@ -10,7 +10,7 @@ import (
 	"github.com/imirjar/rb-michman/internal/models"
 )
 
-// Most information about the application
+// General information about the application
 // Also grant a information of connected divers
 func (a *App) Info() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

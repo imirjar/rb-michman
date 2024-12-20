@@ -41,10 +41,6 @@ type (
 		diver  *mock.MockDiver
 		grazer *mock.MockGrazer
 	}
-
-	testApp struct {
-		App
-	}
 )
 
 func newTestApp(s *mockService) *App {
@@ -78,7 +74,6 @@ func newMockService(t *testing.T) *mockService {
 }
 
 func NewTestApp(t *testing.T) *App {
-
 	return &App{}
 }
 
@@ -116,17 +111,13 @@ func TestInfo(t *testing.T) {
 		},
 	}
 
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	app := New()
-	grazer := mock.NewMockGrazer(ctrl)
-	app.GrazerService = grazer
+	service := newMockService(t).withGrazer()
+	app := newTestApp(service)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			grazer.EXPECT().DiverList(gomock.Any()).Return(tt.mockReturn, nil)
+			service.grazer.EXPECT().DiverList(gomock.Any()).Return(tt.mockReturn, nil)
 
 			server := httptest.NewServer(http.HandlerFunc(app.Info()))
 			resp, err := http.Get(server.URL)
@@ -177,19 +168,13 @@ func TestGetDivers(t *testing.T) {
 		},
 	}
 
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	app := New()
-	diver := mock.NewMockDiver(ctrl)
-	grazer := mock.NewMockGrazer(ctrl)
-	app.DiverService = diver
-	app.GrazerService = grazer
+	service := newMockService(t).withGrazer()
+	app := newTestApp(service)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			grazer.EXPECT().DiverList(gomock.Any()).Return(tt.mockReturn, nil)
+			service.grazer.EXPECT().DiverList(gomock.Any()).Return(tt.mockReturn, nil)
 
 			server := httptest.NewServer(http.HandlerFunc(app.GetDivers()))
 			resp, err := http.Get(server.URL)
@@ -255,17 +240,13 @@ func TestGetDiverReports(t *testing.T) {
 		},
 	}
 
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	app := New()
-	diver := mock.NewMockDiver(ctrl)
-	app.DiverService = diver
+	service := newMockService(t).withDiver()
+	app := newTestApp(service)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			diver.EXPECT().DiverReports(gomock.Any(), "").Return(tt.service.reports, tt.service.err)
+			service.diver.EXPECT().DiverReports(gomock.Any(), "").Return(tt.service.reports, tt.service.err)
 
 			server := httptest.NewServer(http.HandlerFunc(app.GetDiverReports()))
 			resp, err := http.Get(server.URL)
