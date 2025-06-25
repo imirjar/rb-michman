@@ -45,7 +45,7 @@ func (a *App) Start(ctx context.Context, addr string) error {
 	}))
 
 	// Check connection
-	router.Get("/info", a.Info())
+	router.Get("/", a.Info())
 
 	// Get available divers
 	router.Route("/reports", func(reports chi.Router) {

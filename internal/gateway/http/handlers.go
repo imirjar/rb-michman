@@ -15,23 +15,23 @@ func (a *App) Info() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		text := `Hi! My name is Michman and I can manage all of your databases in a single API.`
 
-		divers, err := a.Service.GetReports(r.Context())
+		reports, err := a.Service.GetReports(r.Context())
 		if err != nil {
 			log.Print(err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		if len(divers) > 0 {
-			text += `<table style="border-style: solid;"><tr><th>name</th><th>addres</th><th>status</th></tr>`
-			for _, v := range divers {
-				status := "<a>&#128993;</a>"
+		if len(reports) > 0 {
+			text += `<table style="border-style: solid;"><tr><th>name</th><th>status</th></tr>`
+			for _, v := range reports {
+				// status := "<a>&#128993;</a>"
 				// if v.CheckConn() {
 				// 	status = "<a>&#128994;</a>"
 				// } else {
 				// 	status = "<a>&#128308;</a>"
 				// }
-				text += fmt.Sprintf("<tr><td>%s</td><td>%s</td><td>%s</td></tr>", v.Name, status)
+				text += fmt.Sprintf("<tr><td>%s</td><td>%s</td></tr>", v.Name, v.Query)
 			}
 			text += "</table>"
 		}
