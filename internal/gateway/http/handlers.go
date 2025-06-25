@@ -23,7 +23,7 @@ func (a *App) Info() http.HandlerFunc {
 		}
 
 		if len(reports) > 0 {
-			text += `<table style="border-style: solid;"><tr><th>name</th><th>status</th></tr>`
+			text += `<table style="border-style: solid;"><tr><th>id</th><th>name</th><th>query</th></tr>`
 			for _, v := range reports {
 				// status := "<a>&#128993;</a>"
 				// if v.CheckConn() {
@@ -31,7 +31,7 @@ func (a *App) Info() http.HandlerFunc {
 				// } else {
 				// 	status = "<a>&#128308;</a>"
 				// }
-				text += fmt.Sprintf("<tr><td>%s</td><td>%s</td></tr>", v.Name, v.Query)
+				text += fmt.Sprintf("<tr><td>%s</td><td>%s</td><td>%s</td></tr>", v.Id, v.Name, v.Query)
 			}
 			text += "</table>"
 		}
