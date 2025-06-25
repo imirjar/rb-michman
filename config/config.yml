@@ -1,4 +1,0 @@
-port: 9090
-auth: auth.example.com
-mongo: mongodb://user:password@example.com/some_db
-rabbit: amqp://user:password@example.com:5672/
