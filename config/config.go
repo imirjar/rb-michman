@@ -9,8 +9,10 @@ import (
 )
 
 type Config struct {
-	Port string `yml:"port" env:"PORT"`
-	Auth string `yaml:"auth" env:"AUTH"`
+	Port   string `yml:"port" env:"PORT"`
+	Auth   string `yaml:"auth" env:"AUTH"`
+	Mongo  string `yaml:"mongo" env:"MONGO"`
+	Rabbit string `yaml:"rabbit" env:"RABBIT"`
 }
 
 func New() *Config {

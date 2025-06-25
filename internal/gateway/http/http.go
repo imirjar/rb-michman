@@ -10,21 +10,14 @@ import (
 	"github.com/imirjar/rb-michman/internal/models"
 )
 
-type Diver interface {
-	DiverReports(context.Context, string) ([]models.Report, error)
-	GetDiverReportData(ctx context.Context, addr, repID string) (models.Data, error)
-	GetDiverReportDataMap(ctx context.Context, addr, repID string) ([]map[string]interface{}, error)
-}
-
-type Grazer interface {
-	ConnectDiver(context.Context, models.Diver) error
-	DiverList(context.Context) (map[string]models.Diver, error)
-	DiverAddr(ctx context.Context, hash string) (string, error)
+type Service interface {
+	GetReports(context.Context) ([]models.Report, error)
+	ExecuteReport(context.Context, string) (models.Data, error)
+	// ExecuteReportMap(ctx context.Context, hash string) (string, error)
 }
 
 type App struct {
-	DiverService  Diver
-	GrazerService Grazer
+	Service Service
 }
 
 func New() *App {
@@ -52,16 +45,15 @@ func (a *App) Start(ctx context.Context, addr string) error {
 	}))
 
 	// Check connection
-	router.Get("/", a.Info())
+	router.Get("/info", a.Info())
 
 	// Get available divers
-	router.Route("/divers", func(diver chi.Router) {
-		diver.Get("/", a.GetDivers())
-		diver.Get("/{id}", a.GetDiverReports())
-		diver.Get("/{id}/{reportId}", a.ExecuteDiverReport())
+	router.Route("/reports", func(reports chi.Router) {
+		reports.Get("/", a.GetReports()) // diver reports list from DB
+		reports.Post("/{id}", a.ExecuteReport())
 	})
 
-	router.Post("/connect", a.ConnectDiver())
+	// router.Post("/connect", a.ConnectDiver())
 
 	srv := &http.Server{
 		Addr:    ":" + addr,

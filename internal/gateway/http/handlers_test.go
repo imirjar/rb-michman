@@ -44,11 +44,13 @@ type (
 )
 
 func newTestApp(s *mockService) *App {
-	app := App{
-		GrazerService: s.grazer,
-		DiverService:  s.diver,
-	}
-	return &app
+	// app := App{
+	// 	GrazerService: s.grazer,
+	// 	DiverService:  s.diver,
+	// }
+	// return &app
+
+	return &App{}
 }
 
 func (s *mockService) withGrazer() *mockService {
@@ -176,7 +178,7 @@ func TestGetDivers(t *testing.T) {
 
 			service.grazer.EXPECT().DiverList(gomock.Any()).Return(tt.mockReturn, nil)
 
-			server := httptest.NewServer(http.HandlerFunc(app.GetDivers()))
+			server := httptest.NewServer(http.HandlerFunc(app.GetReports()))
 			resp, err := http.Get(server.URL)
 			if err != nil {
 				t.Error(err)
@@ -184,83 +186,6 @@ func TestGetDivers(t *testing.T) {
 
 			if resp.StatusCode != tt.resp.code {
 				t.Errorf("CODE %d, expected %d", resp.StatusCode, tt.resp.code)
-			}
-
-		})
-
-	}
-
-}
-
-func TestGetDiverReports(t *testing.T) {
-
-	tests := []struct {
-		name    string
-		service diverService
-		resp    response
-	}{
-		{
-			name: "ok",
-			service: diverService{
-				reports: []models.Report{
-					models.Report{
-						Id:   "1",
-						Name: "one",
-						Data: "",
-					},
-				},
-				err: nil,
-			},
-			resp: response{
-				contentType: "application/json",
-				code:        200,
-			},
-		},
-		{
-			name: "no reports",
-			service: diverService{
-				reports: []models.Report{},
-				err:     nil,
-			},
-			resp: response{
-				contentType: "application/json",
-				code:        200,
-			},
-		},
-		{
-			name: "with service error",
-			service: diverService{
-				reports: []models.Report{},
-				err:     errors.New("some error"),
-			},
-			resp: response{
-				contentType: "application/json",
-				code:        500,
-			},
-		},
-	}
-
-	service := newMockService(t).withDiver()
-	app := newTestApp(service)
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			service.diver.EXPECT().DiverReports(gomock.Any(), "").Return(tt.service.reports, tt.service.err)
-
-			server := httptest.NewServer(http.HandlerFunc(app.GetDiverReports()))
-			resp, err := http.Get(server.URL)
-			if err != nil {
-				t.Error(err)
-			}
-
-			if resp.StatusCode != tt.resp.code {
-				t.Errorf("CODE %d, expected %d", resp.StatusCode, tt.resp.code)
-			}
-
-			ct := resp.Header.Get("Content-type")
-			if ct != tt.resp.contentType {
-				t.Errorf("Content type is %s, expected %s", ct, tt.resp.contentType)
 			}
 
 		})

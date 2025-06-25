@@ -6,10 +6,9 @@ import (
 
 	"github.com/imirjar/rb-michman/config"
 	"github.com/imirjar/rb-michman/internal/gateway/http"
-	diver1 "github.com/imirjar/rb-michman/internal/service/diver"
-	"github.com/imirjar/rb-michman/internal/service/grazer"
-	"github.com/imirjar/rb-michman/internal/storage/diver"
-	grazer1 "github.com/imirjar/rb-michman/internal/storage/grazer"
+	"github.com/imirjar/rb-michman/internal/service"
+	"github.com/imirjar/rb-michman/internal/storage/queries"
+	"github.com/imirjar/rb-michman/internal/storage/reports"
 )
 
 func Run(ctx context.Context) error {
@@ -17,30 +16,36 @@ func Run(ctx context.Context) error {
 	cfg := config.New()
 
 	// Приложение состоит из 3 основных слоев
-	// 1)rpc - Шлюз через который приложений обрабатывает входящие запросы
+	// 1)srv - Шлюз через который приложений обрабатывает входящие запросы
 	// 2)service - Сервис для логики обработки запросов
 	// 3)storage - Хранилище значений
+
 	// Слои представляют собой цепочку последовательностей
-	apiStore := diver.New()
-	memStore := grazer1.New()
-
-	// Collect information about current divers
-	grazer := grazer.New()
-
-	// Current Divers API which are available
-	reporter := diver1.New()
-
-	srv := http.New()
-
 	// Соединяем srv->service->storage
 	// Так данные и будут двигаться
-	grazer.Grazer = memStore
 
-	reporter.Divers = apiStore
-	reporter.Collector = memStore
+	// Report storage for michman and diver
+	reportStore := reports.New()
+	reportStore.Connect(context.Background(), cfg.Mongo)
+	if err := reportStore.Connect(context.Background(), cfg.Mongo); err != nil {
+		log.Print(err)
+	}
+	defer reportStore.Disconnect()
 
-	srv.DiverService = reporter
-	srv.GrazerService = grazer
+	// Quries from michman to diver
+	queryStore := queries.New()
+	if err := queryStore.Connect(context.Background(), cfg.Rabbit); err != nil {
+		log.Print(err)
+	}
+	defer queryStore.Disconnect()
+
+	// Main business logic
+	service := service.New()
+	service.MQ = queryStore
+	service.RS = reportStore
+
+	srv := http.New()
+	srv.Service = service
 
 	done := make(chan bool)
 
